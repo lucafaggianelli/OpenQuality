@@ -1,0 +1,74 @@
+<h1><a href="javascript:void(0)" ng-click="editPreset()">{{preset.header}}</a></h1>
+
+<div hidden ng-show="edit_preset" class="container box">
+<form class="form" role="form">
+    <div class="box-label">Edit query</div>
+    <div class="form-group">
+        <label for="query">Query name</label>
+        <input class="form-control" ng-model="preset.header"/>
+    </div>
+
+    <label for="severity">Severity</label><br/>
+    <select name="severity" class="form-control" multiple ng-model="preset.query.severity"
+            ng-options="severity for severity in severities">
+    </select><br/>
+
+    <label for="appliesTo">Target release (Applies to)</label>
+    <select name="appliesTo" class="form-control" multiple ng-model="preset.query['detected-in-rel']"
+            ng-options="appliesTo.value as appliesTo.label for appliesTo in applies">
+    </select><br/>
+
+    <label for="status">Status</label>
+    <select name="status" class="form-control" multiple ng-model="preset.query.status"
+            ng-options="status for status in statuses">
+    </select><br/>
+
+    <label for="status">Type</label>
+    <select name="status" class="form-control" multiple ng-model="preset.query['user-43']"
+            ng-options="type for type in issueTypes">
+    </select><br/>
+
+    <div class="form-group">
+        <label for="query">Query</label>
+        <input disabled class="form-control" value="{{preset.query}}"/>
+    </div>
+
+    <button class="btn btn-primary" ng-click="updatePreset()">
+        Save
+    </button>
+    <button class="btn btn-default" ng-click="editPreset()">
+        Cancel
+    </button>
+</form>
+</div>
+
+<div ng-show="defects" class="form-group">
+    <input ng-model="searchText" placeholder="Quick filter..."
+           class="form-control"/ >
+</div>
+
+<div ng-show="!loading">
+{{totalCount}} defects queried. {{(defects| filter:searchText).length}} displayed.
+</div>
+
+<table ng-show="defects" data-provides="rowlink" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Severity</th>
+            <th>Owner</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr ng-repeat="defect in defects| filter:searchText" ng-click="showDefect(defect.id)">
+            <td>{{defect.id}}</td>
+            <td>{{defect.name}}</td>
+            <td>{{defect.status}}</td>
+            <td>{{defect.severity}}</td>
+            <td>{{getFullName(defect.owner)}}</td>
+        </tr>
+    </tbody>
+</table>

@@ -1,0 +1,57 @@
+<div ng-show="!loading">
+    <h4>#{{defect.id}} {{defect.name}}</h4>
+    <div class="box"><div class="box-label">Description</div><div contenteditable="true" ng-model="defect.description"></div></div>
+    <div class="box"><div class="box-label">Comments</div><div ng-bind-html-unsafe="defect['dev-comments']"></div></div>
+    <div class="box"><div class="box-label">Detected in/on/by</div>{{defect["detection-version"]}}
+        build {{defect["user-69"]}},
+        {{defect["creation-time"]}} by {{getFullName(defect["detected-by"])}}</div>
+    <div class="box"><div class="box-label">Owner</div>
+
+        <div class="select2-container select2-container-active">
+            <a class="select2-choice" ng-click="showUsers($event)">
+                <span class="select2-chosen">{{getFullName(defect.owner)}}</span>
+                <abbr class="select2-search-choice-close"></abbr>
+                <span class="select2-arrow"><b></b></span>
+            </a>
+            <div ng-show="showBox" class="select2-drop select2-with-searchbox select2-drop-active">
+            <div class="select2-search">
+                <input ng-model="filter" class="select2-input select2-focused" />
+            </div>
+            <ul class="select2-results">
+                <li ng-repeat="user in users | filter:filterUsers" class="select2-results-dept-0 select2-result select2-result-selectable">
+                    <div class="select2-result-label" ng-click="select(user.name);">
+                        {{user.fullname}}
+                    </div>
+                </li>
+            </ul>
+            </div>
+        </div>
+
+    </div>
+    <div class="box">
+        <div class="box-label">Status</div>
+        <select name="status" class="form-control" ng-model="defect.status"
+                ng-options="status for status in statuses">
+        </select>
+    </div>
+    <div class="box" ng-show="defect.status == 'Fixed'">
+        <div class="box-label">Fixed in build</div>
+        <input class="form-control" ng-model="defect['user-46']" />
+    </div>
+    <div class="box">
+        <div class="box-label">Resolution note</div>
+        <div contenteditable="true" ng-model="defect['user-63']"></div>
+    </div>
+    <div  class="box" ng-show="attachments">
+        <div class="box-label">Defect Attachments</div>
+        <li ng-repeat="attachment in attachments">
+            <a href="{{attachment.url}}" download>{{attachment.name}}</a>
+        </li>
+    </div>
+
+    <div class="alert alert-danger" ng-show="errorMessage">{{errorMessage}}</div>
+    <button ng-click="save()"
+            class="ng-class: saveEnabledClass(); btn btn-primary pull-right">
+        Save
+    </button>
+</div>
