@@ -252,4 +252,18 @@ ALM.saveDefect = function saveDefect(cb, errCb, defect, lastSavedDefect) {
   start();
 }
 
+ALM.createDefect = function(data) {
+      
+    var url = "rest/domains/" + DOMAIN +
+            "/projects/" + PROJECT +
+            "/defects/" + defect.id;
+
+    ALM.ajax(url,
+        function() {},
+        function() {},
+        'POST',
+        null,//convertFieldsBack(changedFields, 'defect');
+        'application/xml');
+}
+
 })();

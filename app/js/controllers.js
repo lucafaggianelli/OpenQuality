@@ -107,3 +107,12 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             },
             queryString, fields);
     }]);
+
+openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams',
+    function($scope, $routeParams) {
+        $scope.defect = {};
+
+        $scope.createDefect = function() {
+            ALM.createDefect($scope.defect);
+        }
+    }]);

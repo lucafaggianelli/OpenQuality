@@ -33,6 +33,10 @@ openQualityApp.config(['$routeProvider',
             templateUrl: 'partials/defect-list.html',
             controller: 'DefectListCtrl'
         }).
+        when('/projects/:project/defects/new', {
+            templateUrl: 'partials/defect-new.html',
+            controller: 'DefectNewCtrl'
+        }).
         when('/projects/:project/defects/:defect', {
             templateUrl: 'partials/defect-detail.html',
             controller: 'DefectDetailCtrl'
