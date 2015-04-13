@@ -5,9 +5,9 @@
 var openQualityApp = angular.module('openQualityApp', [
     'ngRoute',
 
-    'openQualityControllers'
+    'openQualityControllers',
+    'openQualityServices'
     //'phonecatFilters',
-    //'phonecatServices'
 ]);
 
 openQualityApp.config(['$routeProvider',
@@ -34,7 +34,7 @@ openQualityApp.config(['$routeProvider',
             controller: 'DefectListCtrl'
         }).
         when('/projects/:project/defects/new', {
-            templateUrl: 'partials/defect-new.html',
+            templateUrl: 'partials/defect-detail.html',
             controller: 'DefectNewCtrl'
         }).
         when('/projects/:project/defects/:defect', {

@@ -144,15 +144,21 @@ ALM.getUsers = function getUsers(cb, errCb) {
     var path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +
                "/customization/users?" + LOGIN_FORM;
+
     ALM.ajax(path, function onSuccess(usersJSON) {
-        var users = usersJSON.User.map(function(el) {
-            return {
-                name: el.Name,
+        var users = {};
+        var el;
+        for (var i in usersJSON.User) {
+            el = usersJSON.User[i];
+
+            users[el.Name] = {
+                id: el.Name,
                 fullname: el.FullName,
                 email: el.email,
                 phone: el.phone,
             };
-        })
+        }
+
         cb(users);
     }, errCb);
 }

@@ -15,7 +15,7 @@ openQualityControllers.controller('HomeCtrl', ['$scope', '$location',
         );
     }]);
 
-openQualityControllers.controller('LoginCtrl', ['$scope',
+openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
     function($scope) {
         $scope.login = function() {
             var username = $('#username').val(),
@@ -25,11 +25,14 @@ openQualityControllers.controller('LoginCtrl', ['$scope',
                 function(data) {
                     console.log('logged in',data);
                     location.hash = '/';
+
+                    if (localStorage.getItem('users') == null)
+                        Users.update();
                 },
                 function(data) {
                     console.log('logged out', data);
                 }
-                );
+            );
         }
     }
 ]);
@@ -79,7 +82,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams',
         }
     }]);
 
-openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
+openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'Users',
     function($scope, $routeParams) {
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
@@ -108,8 +111,9 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             queryString, fields);
     }]);
 
-openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams',
+openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'Users',
     function($scope, $routeParams) {
+        $scope.newDefect = true;
         $scope.defect = {};
 
         $scope.createDefect = function() {

@@ -4,6 +4,27 @@
 
 var openQualityServices = angular.module('openQualityServices', []);
 
+
+openQualityServices.service('Users', function() {
+    var that = this;
+    this.users = {};
+
+    this.update = function() {
+        ALM.getUsers(function(users) {
+            that.users = users;
+        }, function() {});
+    }
+
+    this.getUser = function(name) {
+        return this.users[name];
+    };
+
+    if (localStorage.getItem('users')) {
+        this.users = JSON.parse(localStorage.getItem('users'));
+    }
+});
+
+/*
 app.factory('ALM', function() {
     return {
         getFullName: function(username) {
@@ -20,4 +41,4 @@ app.factory('ALM', function() {
               });
         },
     };
-});
+});*/
