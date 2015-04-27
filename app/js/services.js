@@ -38,14 +38,36 @@ openQualityServices.service('Users', function() {
 openQualityServices.service('QCUtils', function() {
     var that = this;
     this.lists = {};
+    this.fields = {};
 
     this.getDefectLists = function(entity) {
     }
 
     this.update = function() {
-        ALM.getProperties('customization/entities/defect/lists',
+        ALM.getProperties('customization/entities/defect/fields',
             function(json) {
-                that.lists = json;
+                that.fields = {};
+                for (var i in json.Field) {
+                    that.fields[json.Field[i].Name] = json.Field[i];
+                }
+                
+                ALM.getProperties('customization/entities/defect/lists',
+                    function(json) {
+                        for (var i in json.List) {
+                            for (var j in that.fields) {
+                                if (that.fields[j].Type == 'LookupList' && 
+                                        that.fields[j].List_Id == json.List[i].Id &&
+                                        json.List[i].Items.Item) {
+                                    console.log('Got '+that.fields[j].Name);
+                                    that.fields[j].Values = json.List[i].Items.Item.map(
+                                            function(x){return x.value;});
+                                }
+                            }
+                        }
+                    }, function() {
+                        console.log('Fail');
+                    });
+
             }, function() {
                 console.log('Fail');
             });

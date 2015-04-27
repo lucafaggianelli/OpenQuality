@@ -4,14 +4,18 @@
 
 var openQualityControllers = angular.module('openQualityControllers', []);
 
-openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams',
-    function($scope, $routeParams) {
+openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
+    function($scope, $routeParams, Users, QCUtils) {
         $scope.project = $routeParams.project || 'Projects';
         $scope.projects = [];
 
         $scope.$on('projectChanged', function(event, data) {
-            console.log('Project changed', data);
-            $scope.project = data;
+            if (data != $scope.project) {
+                console.log('Project changed', data);
+                $scope.project = data;
+                Users.update();
+                QCUtils.update();
+            }
         });
     }]);
 
@@ -63,7 +67,6 @@ openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams'
         $scope.project = $routeParams.project;
         ALM.setCurrentProject($scope.project);
 
-        Users.update();
         $scope.$emit('projectChanged', $scope.project);
     }]);
 
@@ -71,6 +74,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
     function($scope, $routeParams, Users) {
         $scope.project = $routeParams.project;
         ALM.setCurrentProject($scope.project);
+        $scope.$emit('projectChanged', $scope.project);
         $scope.Users = Users;
 
         var queryString = "",
@@ -103,9 +107,10 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         var IMGS_SUFFIX = ['.png', '.bmp', '.jpg', '.jpeg', '.gif'];
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
-        $scope.Users = Users;
+        $scope.users = Users.users;
 
         ALM.setCurrentProject($scope.project);
+        $scope.$emit('projectChanged', $scope.project);
 
         $scope.isImg = function(filename) {
             var suffix;
@@ -115,7 +120,6 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     return true;
                 }
             }
-            console.log(filename+' is not img')
             return false;
         };
 
@@ -168,12 +172,47 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             queryString, fields);
     }]);
 
-openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'Users',
-    function($scope, $routeParams, Users) {
+openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
+    function($scope, $routeParams, Users, QCUtils) {
+        $scope.$emit('projectChanged', $scope.project);
         $scope.newDefect = true;
         $scope.defect = {};
 
-        $scope.createDefect = function() {
-            ALM.createDefect($scope.defect);
+        $scope.users = Users.users;
+        $scope.statuses = QCUtils.fields.status.Values;
+        $scope.versions = QCUtils.fields['detection-version'].Values;
+        $scope.severities = QCUtils.fields.severity.Values;
+
+        $scope.createDefect = function(defect) {
+            console.log(defect);
+            ALM.createDefect(defect);
         }
     }]);
+
+var FIELDS = {
+    Status: [
+        "Blocked",
+        "Closed",
+        "Deferred",
+        "Fixed",
+        "New",
+        "Open",
+        "Partially Verified",
+        "Rejected",
+        "Reopen",
+        "Request to Defer"
+    ],
+    Versions: [
+        "Alpha",
+        "N/A",
+        "To Be Determined",
+        "pre-Alpha"
+    ],
+    Severities: [
+        "1-Feature Request",
+        "2-Cosmetic",
+        "3-Minor functional",
+        "4-Major functional",
+        "5-Crash or data loss"
+    ],
+};

@@ -4,8 +4,8 @@
 
 var openQualityApp = angular.module('openQualityApp', [
     'ngRoute',
-     'ui.select',
-     'ngSanitize',
+    'ui.select',
+    'ngSanitize',
 
     'openQualityControllers',
     'openQualityServices',
@@ -36,7 +36,7 @@ openQualityApp.config(['$routeProvider',
             controller: 'DefectListCtrl'
         }).
         when('/projects/:project/defects/new', {
-            templateUrl: 'partials/defect-detail.html',
+            templateUrl: 'partials/defect-edit.html',
             controller: 'DefectNewCtrl'
         }).
         when('/projects/:project/defects/:defect', {

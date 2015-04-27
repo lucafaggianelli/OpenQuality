@@ -1,20 +1,18 @@
-<h1 ng-show="newDefect">New Defect</h1>
-<h1 ng-show="!newDefect">#{{defect.id}} {{defect.name}}</h1>
+<div class="page-header">
+    <h1><span class="text-primary">#{{defect.id}}</span> {{defect.name}} <small><a
+        href=""><span class="glyphicon glyphicon-pencil"></span></a></small></h1>
+</div>
 
 <form id="defect-detail">
-    <div class="form-group">
-        <label class="control-label">Description</label>
-        <div contenteditable="true" ng-bind-html="defect.description"></div>
+    <div ng-bind-html="defect.description"></div>
+
+    <div class="panel panel-default">
+        <div class="panel-body"><span class="label label-primary">{{defect.status}}</span> Detected in version <b>{{defect["detection-version"]}}</b> on <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> <b>{{defect["creation-time"]}}</b> by <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <b>{{Users.getName(defect["detected-by"])}}</b></div>
     </div>
 
     <div class="form-group">
-        <label class="control-label">Detected in</label>
-        <div>Version <i>{{defect["detection-version"]}}</i> on <i>{{defect["creation-time"]}}</i> by {{Users.getName(defect["detected-by"])}}</div>
-    </div>
-
-    <div class="form-group">
-        <label class="control-label">Owner</label>
-        <div contenteditable="true" ng-model="defect.owner"></div>
+        <p>Assigned to <select ng-model="defect.owner" ng-options="user.id as user.fullname for (k, user) in users">
+        </select></p>
         <!--
         <ui-select ng-model="defect.owner"
                 theme="bootstrap"
@@ -28,13 +26,6 @@
         </ui-select>-->
     </div>
 
-    <div class="form-group">
-        <label class="control-label">Status</label>
-        <select name="status" class="form-control" ng-model="defect.status"
-                ng-options="status for status in statuses">
-        </select>
-    </div>
-
     <div class="form-group" ng-show="defect.status == 'Fixed'">
         <label class="box-label">Fixed in build</label>
         <input class="form-control" ng-model="defect['user-46']" />
@@ -45,12 +36,14 @@
         <div contenteditable="true" ng-model="defect['user-63']"></div>
     </div>
 
-    <div class="form-group" ng-show="defect.attachments">
-        <label class="control-label">Defect Attachments</label>
+    <div class="panel panel-default">
+        <div class="panel-heading"><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> <b>Attachments</b></div>
+
         <div class="list-group">
+            <a class="list-group-item list-group-item-info" href="#"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file...</a>
             <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}}
-                <p ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
+                <p class="thumbnail" ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
             </a>
         </div>
     </div>
@@ -61,8 +54,8 @@
         <div ng-bind-html="defect['dev-comments']"></div>
     </div>-->
 
-    <div class="form-group">
-        <label class="control-label">Comments</label>
+    <div class="panel panel-default">
+        <div class="panel-heading"><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> <b>Comments</b></div>
         <div class="list-group">
             <div class="list-group-item" ng-repeat="comment in defect.comments">
                 <h4 class="list-group-item-heading">{{comment.user}} - {{comment.date}}</h4>

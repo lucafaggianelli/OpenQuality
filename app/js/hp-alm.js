@@ -30,7 +30,6 @@ ALM.onResponse = function onResponse(response, cb, errCb) {
 ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
     $.ajax(API_URL + path, {
         success: function (response) {
-            console.log('AJAX success, parsing XML');
             ALM.onResponse(response, onSuccess, onError);
         },
         error: onError,
