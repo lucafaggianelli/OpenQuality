@@ -118,7 +118,7 @@ function convertFields(entities) {
 ALM.getDefectAttachments = function getDefectAttachments(defectId, cb, errCb) {
     var path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +
-               "/defects/" + defectId + "/attachments?" + LOGIN_FORM;
+               "/defects/" + defectId + "/attachments";
     ALM.ajax(path, function onSuccess(attachmentsJSON) {
         var attachments = convertFields(attachmentsJSON.Entity);
         var buildAttachmentUrl = function(attachment) {
@@ -258,18 +258,30 @@ ALM.saveDefect = function saveDefect(cb, errCb, defect, lastSavedDefect) {
   start();
 }
 
-ALM.createDefect = function(data) {
+ALM.createDefect = function(fields) {
       
     var url = "rest/domains/" + DOMAIN +
             "/projects/" + PROJECT +
-            "/defects/" + defect.id;
+            "/defects";
+    
+    var xml = convertFieldsBack(fields, 'defect');
 
-    ALM.ajax(url,
+    console.log('will post to '+url, xml);
+
+    /*ALM.ajax(url,
         function() {},
         function() {},
         'POST',
         null,//convertFieldsBack(changedFields, 'defect');
-        'application/xml');
+        'application/xml');*/
+}
+
+ALM.getProperties = function(path, callback, err) {
+    var url = "rest/domains/" + DOMAIN +
+            "/projects/" + PROJECT +
+            "/" + path;
+
+    ALM.ajax(url, callback, err);
 }
 
 })();

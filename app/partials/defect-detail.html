@@ -1,27 +1,31 @@
-<h4 ng-show="newDefect">New Defect</h4>
-<h4 ng-show="!newDefect">#{{defect.id}} {{defect.name}}</h4>
+<h1 ng-show="newDefect">New Defect</h1>
+<h1 ng-show="!newDefect">#{{defect.id}} {{defect.name}}</h1>
 
 <form id="defect-detail">
     <div class="form-group">
         <label class="control-label">Description</label>
-        <div contenteditable="true" ng-model="defect.description"></div>
-    </div>
-
-    <div class="form-group">
-        <label class="control-label">Comments</label>
-        <div ng-bind-html-unsafe="defect['dev-comments']"></div>
+        <div contenteditable="true" ng-bind-html="defect.description"></div>
     </div>
 
     <div class="form-group">
         <label class="control-label">Detected in</label>
-        <div>{{defect["detection-version"]}} on {{defect["creation-time"]}} by {{defect["detected-by"]}}</div>
+        <div>Version <i>{{defect["detection-version"]}}</i> on <i>{{defect["creation-time"]}}</i> by {{Users.getName(defect["detected-by"])}}</div>
     </div>
 
     <div class="form-group">
         <label class="control-label">Owner</label>
-        <select ng-model="defect.owner" class="users-dropdown">
-            <option ng-repeat="u in Users.users" value="{{u.id}}">{{ u.fullname }}</option>
-        </select>
+        <div contenteditable="true" ng-model="defect.owner"></div>
+        <!--
+        <ui-select ng-model="defect.owner"
+                theme="bootstrap"
+                ng-disabled="disabled"
+                reset-search-input="false"
+                style="width: 300px;">
+            <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
+            <ui-select-choices repeat="user in users | filter: $select.search">
+                <div ng-bind-html="user.fullname | highlight: $select.search"></div>
+            </ui-select-choices>
+        </ui-select>-->
     </div>
 
     <div class="form-group">
@@ -41,14 +45,33 @@
         <div contenteditable="true" ng-model="defect['user-63']"></div>
     </div>
 
-    <div class="form-group" ng-show="attachments">
+    <div class="form-group" ng-show="defect.attachments">
         <label class="control-label">Defect Attachments</label>
-        <li ng-repeat="attachment in attachments">
-            <a href="{{attachment.url}}" download>{{attachment.name}}</a>
-        </li>
+        <div class="list-group">
+            <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
+                <span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}}
+                <p ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
+            </a>
+        </div>
+    </div>
+
+    <!--
+    <div class="form-group">
+        <label class="control-label">Comments</label>
+        <div ng-bind-html="defect['dev-comments']"></div>
+    </div>-->
+
+    <div class="form-group">
+        <label class="control-label">Comments</label>
+        <div class="list-group">
+            <div class="list-group-item" ng-repeat="comment in defect.comments">
+                <h4 class="list-group-item-heading">{{comment.user}} - {{comment.date}}</h4>
+                <p class="list-group-item-text" ng-bind-html="comment.content"></p>
+            </div>
+        </div>
     </div>
 
     <div class="alert alert-danger" ng-show="errorMessage">{{errorMessage}}</div>
     <button ng-show="!newDefect" ng-click="save()" class="ng-class: saveEnabledClass(); btn btn-primary">Save</button>
-    <button ng-show="newDefect" ng-click="create()" class="ng-class: saveEnabledClass(); btn btn-primary">Create</button>
+    <button ng-show="newDefect" ng-click="createDefect()" class="ng-class: saveEnabledClass(); btn btn-primary">Create</button>
 </form>

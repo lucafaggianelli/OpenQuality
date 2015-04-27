@@ -4,9 +4,11 @@
 
 var openQualityApp = angular.module('openQualityApp', [
     'ngRoute',
+     'ui.select',
+     'ngSanitize',
 
     'openQualityControllers',
-    'openQualityServices'
+    'openQualityServices',
     //'phonecatFilters',
 ]);
 

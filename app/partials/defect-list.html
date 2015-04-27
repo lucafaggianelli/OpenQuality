@@ -54,21 +54,29 @@
 <table ng-show="defects" data-provides="rowlink" class="table table-bordered table-hover">
     <thead>
         <tr>
+            <th><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span></th>
+            <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
+            <th><span class="glyphicon glyphicon-comment" aria-hidden="true"></span></th>
             <th>#</th>
             <th>Description</th>
             <th>Status</th>
             <th>Severity</th>
-            <th>Owner</th>
+            <th>Assigned To</th>
+            <th>Detected By</th>
         </tr>
     </thead>
 
     <tbody>
         <tr ng-repeat="defect in defects| filter:searchText" ng-click="showDefect(defect.id)">
+            <td>{{defect['creation-time']}}</td>
+            <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
+            <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>
             <td>{{defect.id}}</td>
-            <td>{{defect.name}}</td>
+            <td><p><b>{{defect.name}}</b></p><p ng-bind-html="defect.description | limitTo:200"></p></td>
             <td>{{defect.status}}</td>
             <td>{{defect.severity}}</td>
-            <td>{{getFullName(defect.owner)}}</td>
+            <td>{{Users.getName(defect.owner)}}</td>
+            <td>{{Users.getName(defect['detected-by'])}}</td>
         </tr>
     </tbody>
 </table>
