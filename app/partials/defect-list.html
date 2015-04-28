@@ -1,11 +1,8 @@
 <h1><a href="javascript:void(0)" ng-click="editPreset()">{{preset.header}}</a></h1>
 
-<div hidden ng-show="edit_preset" class="container box">
-<form class="form" role="form">
-    <div class="box-label">Edit query</div>
+<form class="form" role="form" ng-show="showAdv">
     <div class="form-group">
-        <label for="query">Query name</label>
-        <input class="form-control" ng-model="preset.header"/>
+        <input class="form-control" ng-model="preset.header" placeholder="Search..."/>
     </div>
 
     <label for="severity">Severity</label><br/>
@@ -13,70 +10,60 @@
             ng-options="severity for severity in severities">
     </select><br/>
 
-    <label for="appliesTo">Target release (Applies to)</label>
-    <select name="appliesTo" class="form-control" multiple ng-model="preset.query['detected-in-rel']"
-            ng-options="appliesTo.value as appliesTo.label for appliesTo in applies">
-    </select><br/>
-
     <label for="status">Status</label>
     <select name="status" class="form-control" multiple ng-model="preset.query.status"
             ng-options="status for status in statuses">
     </select><br/>
 
-    <label for="status">Type</label>
-    <select name="status" class="form-control" multiple ng-model="preset.query['user-43']"
-            ng-options="type for type in issueTypes">
-    </select><br/>
-
     <div class="form-group">
-        <label for="query">Query</label>
+        <label for="query">Query Debug</label>
         <input disabled class="form-control" value="{{preset.query}}"/>
     </div>
 
-    <button class="btn btn-primary" ng-click="updatePreset()">
-        Save
-    </button>
-    <button class="btn btn-default" ng-click="editPreset()">
-        Cancel
-    </button>
+    <button class="btn btn-primary" ng-click="updatePreset(preset)">Save</button>
+    <button class="btn btn-default" ng-click="editPreset()">Reset</button>
 </form>
-</div>
 
-<div ng-show="defects" class="form-group">
-    <input ng-model="searchText" placeholder="Quick filter..."
-           class="form-control"/ >
+<div ng-show="defects" class="input-group">
+    <input ng-model="searchText" placeholder="Quick filter..." class="form-control"/ >
+    <span class="input-group-btn">
+        <button class="btn btn-default" type="button" ng-click="showAdv = !showAdv">Advanced</button>
+    </span>
 </div>
 
 <div ng-show="!loading">
 {{totalCount}} defects queried. {{(defects| filter:searchText).length}} displayed.
 </div>
 
-<table ng-show="defects" data-provides="rowlink" class="table table-bordered table-hover">
+<table ng-show="defects" data-provides="rowlink" class="table table-hover">
     <thead>
         <tr>
-            <th><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span></th>
-            <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
-            <th><span class="glyphicon glyphicon-comment" aria-hidden="true"></span></th>
             <th>#</th>
             <th>Description</th>
             <th>Status</th>
             <th>Severity</th>
             <th>Assigned To</th>
             <th>Detected By</th>
+            <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
+            <th><span class="glyphicon glyphicon-comment" aria-hidden="true"></span></th>
+            <th><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span></th>
         </tr>
     </thead>
 
     <tbody>
-        <tr ng-repeat="defect in defects| filter:searchText" ng-click="showDefect(defect.id)">
-            <td>{{defect['creation-time']}}</td>
-            <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
-            <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>
+        <tr ng-repeat="defect in defects| filter:searchText" ng-click="showDefect(defect.id)" ng-class="defect.statusClass">
             <td>{{defect.id}}</td>
-            <td><p><b>{{defect.name}}</b></p><p ng-bind-html="defect.description | limitTo:200"></p></td>
+            <td>
+                <p><b>{{defect.name}}</b></p>
+                <p>{{defect.description | html2text | limitTo: 100}}<span class="info">&hellip;</span></p>
+            </td>
             <td>{{defect.status}}</td>
             <td>{{defect.severity}}</td>
             <td>{{Users.getName(defect.owner)}}</td>
             <td>{{Users.getName(defect['detected-by'])}}</td>
+            <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
+            <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>
+            <td>{{defect['creation-time']}}</td>
         </tr>
     </tbody>
 </table>

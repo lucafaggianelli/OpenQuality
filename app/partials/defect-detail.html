@@ -1,18 +1,31 @@
 <div class="page-header">
-    <h1><span class="text-primary">#{{defect.id}}</span> {{defect.name}} <small><a
-        href=""><span class="glyphicon glyphicon-pencil"></span></a></small></h1>
+    <h1><span class="text-primary">#{{defect.id}}</span> {{defect.name}} <span class="label label-primary">{{defect.status}}</span></h1>
 </div>
 
 <form id="defect-detail">
     <div ng-bind-html="defect.description"></div>
 
     <div class="panel panel-default">
-        <div class="panel-body"><span class="label label-primary">{{defect.status}}</span> Detected in version <b>{{defect["detection-version"]}}</b> on <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> <b>{{defect["creation-time"]}}</b> by <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <b>{{Users.getName(defect["detected-by"])}}</b></div>
+        <div class="panel-heading"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Info</div>
+        <div class="panel-body">
+            <p>Detected in version <b>{{defect["detection-version"]}}</b> on <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span
+                > <b>{{defect["creation-time"]}}</b> by <span class="glyphicon glyphicon-user" aria-hidden="true"></span
+                > <b>{{Users.getName(defect["detected-by"])}}</b>
+            </p>
+            
+            <p>Affetcted terminal <span class="glyphicon glyphicon-phone" aria-hidden="true"></span> <b>{{defect['user-01']}}</b></p>
+            
+            <p>Severity <span class="glyphicon glyphicon-{{defect.severityIcon}}" aria-hidden="true"></span> <b>{{defect.severity}}</b></p>
+
+            <p ng-show="defect.status != 'Fixed'">Status <b>{{defect.status}}</b></p>
+            <p ng-show="defect.status == 'Fixed'">Fixed in build <b>{{defect['user-09']}}</b></p>
+            
+            <p>Assigned to <select ng-model="defect.owner" ng-options="user.id as user.fullname for (k, user) in users">
+        </select></p>
+        </div>
     </div>
 
     <div class="form-group">
-        <p>Assigned to <select ng-model="defect.owner" ng-options="user.id as user.fullname for (k, user) in users">
-        </select></p>
         <!--
         <ui-select ng-model="defect.owner"
                 theme="bootstrap"
@@ -26,37 +39,27 @@
         </ui-select>-->
     </div>
 
-    <div class="form-group" ng-show="defect.status == 'Fixed'">
-        <label class="box-label">Fixed in build</label>
-        <input class="form-control" ng-model="defect['user-46']" />
-    </div>
 
-    <div class="form-group">
-        <label class="control-label">Resolution note</label>
-        <div contenteditable="true" ng-model="defect['user-63']"></div>
-    </div>
-
+    <!-- Attachments -->
     <div class="panel panel-default">
         <div class="panel-heading"><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> <b>Attachments</b></div>
 
         <div class="list-group">
             <a class="list-group-item list-group-item-info" href="#"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file...</a>
             <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
-                <span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}}
+                <p><span class="glyphicon glyphicon-file" aria-hidden="true"></span><span ng-if="attachment.description"> - {{attachment.description}}</span
+                    > {{attachment.name}} ({{getFileSizeString(attachment['file-size'])}} - {{attachment['last-modified']}})</p>
                 <p class="thumbnail" ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
             </a>
         </div>
     </div>
 
-    <!--
-    <div class="form-group">
-        <label class="control-label">Comments</label>
-        <div ng-bind-html="defect['dev-comments']"></div>
-    </div>-->
-
+    <!-- Comments -->
     <div class="panel panel-default">
         <div class="panel-heading"><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> <b>Comments</b></div>
+
         <div class="list-group">
+            <a class="list-group-item list-group-item-info" href="#"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a comment...</a>
             <div class="list-group-item" ng-repeat="comment in defect.comments">
                 <h4 class="list-group-item-heading">{{comment.user}} - {{comment.date}}</h4>
                 <p class="list-group-item-text" ng-bind-html="comment.content"></p>

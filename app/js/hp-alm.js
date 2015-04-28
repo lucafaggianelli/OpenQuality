@@ -3,9 +3,8 @@
 var API_URL = "";
 var DOMAIN = "";
 var PROJECT = null;
-var LOGIN_FORM = "login-form-required=y&";
 var ALM = {};
-window.ALM = ALM;
+window.ALM = ALM; // TODO for debug purpose
 
 ALM.config = function(apiUrl, domain) {
     API_URL = apiUrl;
@@ -32,7 +31,14 @@ ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
         success: function (response) {
             ALM.onResponse(response, onSuccess, onError);
         },
-        error: onError,
+        error: function(response) {
+            onError();
+            if (response.status == 401) {
+                console.log('Not logged in');
+                sessionStorage.setItem('redirectAfterLogin', location.hash);
+                location.hash = '/login';
+            }
+        },
         xhrFields: {
             withCredentials: true
         },
@@ -59,7 +65,7 @@ ALM.login = function (username, password, onSuccess, onError) {
 }
 
 ALM.tryLogin = function tryLogin(onLogin, onError) {
-    ALM.ajax("rest/is-authenticated?" + LOGIN_FORM,
+    ALM.ajax("rest/is-authenticated",
     function(response) {
         onLogin(response.Username);
     },
@@ -73,9 +79,13 @@ ALM.logout = function logout(cb) {
 }
 
 function convertFields(entities) {
+    if (!entities || entities.length == 0)
+        return null;
+
     if (!(entities instanceof Array)) {
         entities = [entities];
     }
+
     return entities.map(function (entity) {
         var entityObj = entity.Fields.Field.reduce(function(prev, current) {
             prev[current.Name] = current.Value;
@@ -130,7 +140,7 @@ ALM.getDefectAttachments = function getDefectAttachments(defectId, cb, errCb) {
 
 ALM.getProjects = function getProjects(cb, errCb) {
     var path = "rest/domains/" + DOMAIN +
-               "/projects?" + LOGIN_FORM;
+               "/projects";
     ALM.ajax(path, function onSuccess(usersJSON) {
         var projects = usersJSON.Project.map(function(el) {
             return el.Name;
@@ -142,7 +152,7 @@ ALM.getProjects = function getProjects(cb, errCb) {
 ALM.getUsers = function getUsers(cb, errCb) {
     var path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +
-               "/customization/users?" + LOGIN_FORM;
+               "/customization/users";
 
     ALM.ajax(path, function onSuccess(usersJSON) {
         var users = {};
@@ -163,8 +173,7 @@ ALM.getUsers = function getUsers(cb, errCb) {
 }
 
 ALM.getDefects = function getDefects(cb, errCb, query, fields, pageSize, startIndex) {
-    var computedFields = ["has-others-linkage", "has-linkage", "alert-data"],
-        fieldsParam = null;
+    var computedFields = ["has-others-linkage", "has-linkage", "alert-data"];
     if (!fields) {
         fields = ["id","name","description","dev-comments","severity","attachment"];
     }
@@ -175,14 +184,20 @@ ALM.getDefects = function getDefects(cb, errCb, query, fields, pageSize, startIn
         startIndex = 1;
     }
     fields = fields.filter(function(field) {return computedFields.indexOf(field) == -1;})
-    fieldsParam = 'fields=' + fields.join(',') + '&';
-    var queryParam = "query={" + query + "}&";
-    var pageSizeParam = "page-size=" + pageSize + "&";
-    var startIndexParam = "start-index=" + startIndex + "&";
+
+    var fieldsParam = 'fields=' + fields.join(',');
+    var queryParam = "query={" + query + "}";
+    var pageSizeParam = "page-size=" + pageSize;
+    var startIndexParam = "start-index=" + startIndex;
+    var queryString = [queryParam, 
+        fieldsParam, 
+        pageSizeParam, 
+        startIndexParam].join('&');
+
     var path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +
-               "/defects?" + queryParam + fieldsParam + pageSizeParam +
-               startIndexParam + LOGIN_FORM;
+               "/defects?" + queryString;
+
     ALM.ajax(path, function onSuccess(defectsJSON) {
         var defectsCount = defectsJSON.TotalResults;
         var defects = convertFields(defectsJSON.Entity);

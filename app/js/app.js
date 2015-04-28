@@ -9,7 +9,7 @@ var openQualityApp = angular.module('openQualityApp', [
 
     'openQualityControllers',
     'openQualityServices',
-    //'phonecatFilters',
+    'openQualityFilters',
 ]);
 
 openQualityApp.config(['$routeProvider',
@@ -49,6 +49,15 @@ openQualityApp.config(['$routeProvider',
     }]);
 
 function init() {
+    // Default query params
+    if (!localStorage.getItem('defectsFilter')) {
+        localStorage.setItem('defectsFilter', JSON.stringify({
+            query: {
+                status: ['New', 'Open', 'Reopen']
+            }
+        }));
+    }
+
     ALM.config('http://blqsrv724.dl.net:8080/qcbin/','MC');
 }
 

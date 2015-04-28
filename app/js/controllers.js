@@ -8,13 +8,16 @@ openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams', 'Users',
     function($scope, $routeParams, Users, QCUtils) {
         $scope.project = $routeParams.project || 'Projects';
         $scope.projects = [];
+        $scope.loading = false;
 
         $scope.$on('projectChanged', function(event, data) {
             if (data != $scope.project) {
                 console.log('Project changed', data);
                 $scope.project = data;
-                Users.update();
-                QCUtils.update();
+                if ($scope.project != null) {
+                    Users.update();
+                    QCUtils.update();
+                }
             }
         });
     }]);
@@ -38,8 +41,10 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
             
             ALM.login(username, password,
                 function(data) {
-                    console.log('logged in',data);
-                    location.hash = '/';
+                    console.log('logged in as',username);
+                    sessionStorage.setItem('currentUser', username);
+                    location.hash = sessionStorage.getItem('redirectAfterLogin') || '/';
+                    sessionStorage.removeItem('redirectAfterLogin');
                 },
                 function(data) {
                     console.log('logged out', data);
@@ -70,15 +75,17 @@ openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams'
         $scope.$emit('projectChanged', $scope.project);
     }]);
 
-openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', 'Users',
-    function($scope, $routeParams, Users) {
+openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
+    function($scope, $routeParams, Users, QCUtils) {
         $scope.project = $routeParams.project;
         ALM.setCurrentProject($scope.project);
         $scope.$emit('projectChanged', $scope.project);
         $scope.Users = Users;
 
-        var queryString = "",
-            fields = ["id","name",
+        $scope.statuses = QCUtils.fields.status.Values;
+        $scope.severities = QCUtils.fields.severity.Values;
+
+        var fields = ["id","name",
                     "description",
                     "dev-comments",
                     "attachment",
@@ -88,18 +95,52 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                     "creation-time",
                     "owner", "status", "severity"];
 
-        ALM.getDefects(
-            function onSuccess(defects, totalCount) {
-                $scope.defects = defects;
-                $scope.$apply();
-            },
-            function onError() {
-            },
-            queryString, fields);
+        $scope.preset = JSON.parse(localStorage.getItem('defectsFilter'));
+
+        $scope.getDefects = function() {
+            var queryString = '';
+
+            if ($scope.preset.query) {
+                var values, query;
+                for (var param in $scope.preset.query) {
+                    values = $scope.preset.query[param];
+                    // Literals must be quoted to avoid white space issues
+                    values = values.map(function(x){return '"'+x+'"';});
+                    queryString += param + '[' + values.join(' OR ') + '];';
+                }
+            }
+
+            ALM.getDefects(
+                function onSuccess(defects, totalCount) {
+                    $scope.defects = defects;
+                    
+                    // Status table row class
+                    for (var i in $scope.defects) {
+                        if ($scope.defects[i].status) {
+                            $scope.defects[i].statusClass = STATUS_CLASSES[$scope.defects[i].status] || '';
+                        }
+                    }
+
+                    $scope.$apply();
+                },
+                function onError() {
+                    console.log('err')
+                },
+                queryString, fields);
+        };
+
+        $scope.updatePreset = function(preset) {
+            $scope.preset = preset;
+            localStorage.setItem('defectsFilter', JSON.stringify(preset));
+            $scope.getDefects();
+        }
 
         $scope.showDefect = function(id) {
             location.hash = '/projects/'+$scope.project+'/defects/'+id;
         }
+
+        // Main
+        $scope.getDefects();
     }]);
 
 openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
@@ -111,6 +152,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
         ALM.setCurrentProject($scope.project);
         $scope.$emit('projectChanged', $scope.project);
+
+        $scope.getFileSizeString = Utils.getFileSizeString;
 
         $scope.isImg = function(filename) {
             var suffix;
@@ -129,13 +172,17 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     "creation-time",
                     "owner",
                     "detected-by",
-                    "status"];
+                    "status",
+                    "user-09", //Fixed in version
+                    "user-01", //Terminal
+            ];
 
         ALM.getDefects(
             function onSuccess(defects, totalCount) {
                 if (totalCount == 1) {
                     $scope.defect = defects[0];
-
+    
+                    // Comments - prettify
                     if ($scope.defect['dev-comments']) {
                         var tmp;
                         $scope.defect.comments = $scope.defect['dev-comments'].replace(/<[^>]+>/gm, '').split(/_{3,}/g).map(function(comment) {
@@ -152,6 +199,13 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                                     date: null,
                                     content: comment };
                         });
+                    }
+
+                    // Severity icon
+                    if ($scope.defect.severity) {
+                        var tmp = $scope.defect.severity.match(/^(\d+)/);
+                        if (tmp && tmp.length == 2)
+                            $scope.defect.severityIcon = SEVERITY_ICONS[parseInt(tmp[1])];
                     }
 
                     $scope.$apply();
@@ -189,30 +243,17 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'U
         }
     }]);
 
-var FIELDS = {
-    Status: [
-        "Blocked",
-        "Closed",
-        "Deferred",
-        "Fixed",
-        "New",
-        "Open",
-        "Partially Verified",
-        "Rejected",
-        "Reopen",
-        "Request to Defer"
-    ],
-    Versions: [
-        "Alpha",
-        "N/A",
-        "To Be Determined",
-        "pre-Alpha"
-    ],
-    Severities: [
-        "1-Feature Request",
-        "2-Cosmetic",
-        "3-Minor functional",
-        "4-Major functional",
-        "5-Crash or data loss"
-    ],
-};
+var SEVERITY_ICONS = [
+    null,
+    'gift', // 1 feature request
+    'circle-arrow-down', // 2 cosmetic
+    'arrow-down', // minor
+    'arrow-up', // major
+    'fire' // 5 crash data loss
+];
+
+var STATUS_CLASSES = {
+    Closed: 'danger',
+    Fixed: 'danger',
+    Rejected: 'danger',
+}
