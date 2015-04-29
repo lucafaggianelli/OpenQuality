@@ -10,15 +10,15 @@ openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams', 'Users',
         $scope.project = $routeParams.project || 'Projects';
         $scope.domains = {};
         $scope.loading = false;
-    
+        $scope.user = ALM.getLoggedInUser();
+
         // Get all domains
         ALM.getDomains(function(err, domains) {
             if (err) {
-                console.log(err)
+                console.log(err);
                 return;
             }
 
-            console.log(domains);
             // Get all project for each domain
             async.each(domains, function(dom, callback) {
                 ALM.getProjects(dom, function(projects) {
@@ -32,9 +32,20 @@ openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams', 'Users',
             });
         });
 
+        $scope.$on('loggedIn', function(event, data) {
+            if (data) {
+                // Logged in
+                $scope.user = ALM.getLoggedInUser();
+            } else {
+                // Logged out
+                $scope.user = null;
+            }
+            $scope.$apply();
+        });
+
         $scope.$on('projectChanged', function(event, data) {
             if (data != $scope.project) {
-                console.log('Project changed', data);
+                console.log('Project changed to', data);
                 $scope.domain = data[0];
                 $scope.project = data[1];
                 if ($scope.project != null) {
@@ -66,11 +77,13 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
                 function(data) {
                     console.log('logged in as',username);
                     sessionStorage.setItem('currentUser', username);
+                    $scope.$emit('loggedIn', username);
                     location.hash = sessionStorage.getItem('redirectAfterLogin') || '/';
                     sessionStorage.removeItem('redirectAfterLogin');
                 },
                 function(data) {
                     console.log('logged out', data);
+                    $scope.$emit('loggedIn', null);
                 }
             );
         }

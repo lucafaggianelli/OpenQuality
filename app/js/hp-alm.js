@@ -4,6 +4,7 @@ var API_URL = "";
 var DOMAIN = "";
 var PROJECT = null;
 var ALM = {};
+var loggedInUser = null;
 window.ALM = ALM; // TODO for debug purpose
 
 ALM.config = function(apiUrl, domain) {
@@ -13,6 +14,7 @@ ALM.config = function(apiUrl, domain) {
 
 ALM.getCurrentDomain  = function() { return DOMAIN; }
 ALM.getCurrentProject = function() { return PROJECT; }
+ALM.getLoggedInUser = function() { return loggedInUser; }
 
 ALM.onResponse = function onResponse(response, cb, errCb) {
     var jsonResponse;
@@ -62,10 +64,19 @@ ALM.setCurrentProject = function(dom, prj) {
 }
 
 ALM.login = function (username, password, onSuccess, onError) {
-    ALM.ajax('authentication-point/j_spring_security_check', onSuccess, onError, 'POST', {
-        'j_username': username,
-        'j_password': password
-    });
+    ALM.ajax('authentication-point/j_spring_security_check', 
+        function() {
+            loggedInUser = username;
+            onSuccess();
+        }, function() {
+            loggedInUser = null;
+            onError();
+        },
+        'POST',
+        {
+            'j_username': username,
+            'j_password': password
+        });
 }
 
 ALM.tryLogin = function tryLogin(onLogin, onError) {
