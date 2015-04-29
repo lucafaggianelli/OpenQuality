@@ -11,6 +11,9 @@ ALM.config = function(apiUrl, domain) {
     DOMAIN = domain;
 }
 
+ALM.getCurrentDomain  = function() { return DOMAIN; }
+ALM.getCurrentProject = function() { return PROJECT; }
+
 ALM.onResponse = function onResponse(response, cb, errCb) {
     var jsonResponse;
     try {
@@ -53,7 +56,8 @@ ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
     });
 };
 
-ALM.setCurrentProject = function(prj) {
+ALM.setCurrentProject = function(dom, prj) {
+    DOMAIN = dom;
     PROJECT = prj;
 }
 
@@ -100,6 +104,7 @@ function convertFields(entities) {
         '<Entity Type="' + type + '">' + '<Fields>',
         middle = '',
         end = '</Fields></Entity>';
+
     for (var fieldName in entity) {
       middle += '<Field Name="' + fieldName +'">' +
         '<Value>' + escapeXml(entity[fieldName]) + '</Value></Field>';
@@ -108,6 +113,9 @@ function convertFields(entities) {
   }
 
   function escapeXml (s) {
+    if (!s)
+      return '';
+
     if (typeof s === "number") {
       return s;
     }
@@ -138,9 +146,24 @@ ALM.getDefectAttachments = function getDefectAttachments(defectId, cb, errCb) {
     }, errCb);
 }
 
-ALM.getProjects = function getProjects(cb, errCb) {
-    var path = "rest/domains/" + DOMAIN +
-               "/projects";
+ALM.getDomains = function(callback) {
+    var path = "rest/domains/";
+
+    ALM.ajax(path, function onSuccess(json) {
+        var domains = {};
+        if (json.Domain.length)
+            domains = json.Domain.map(function(el){return el.Name;});
+        else
+            domains = [json.Domain.Name];
+        callback(null, domains);
+    }, function() {
+        callback('cant get domains');
+    });
+}
+
+ALM.getProjects = function getProjects(domain, cb, errCb) {
+    var path = "rest/domains/" + domain + "/projects";
+
     ALM.ajax(path, function onSuccess(usersJSON) {
         var projects = usersJSON.Project.map(function(el) {
             return el.Name;

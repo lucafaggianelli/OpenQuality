@@ -23,23 +23,23 @@ openQualityApp.config(['$routeProvider',
             templateUrl: 'partials/login.html',
             controller: 'LoginCtrl'
         }).
-        when('/projects', {
+        when('/:domain/projects', {
             templateUrl: 'partials/project-list.html',
             controller: 'ProjectListCtrl'
         }).
-        when('/projects/:project', {
+        when('/:domain/projects/:project', {
             templateUrl: 'partials/project-detail.html',
             controller: 'ProjectDetailCtrl'
         }).
-        when('/projects/:project/defects', {
+        when('/:domain/projects/:project/defects', {
             templateUrl: 'partials/defect-list.html',
             controller: 'DefectListCtrl'
         }).
-        when('/projects/:project/defects/new', {
+        when('/:domain/projects/:project/defects/new', {
             templateUrl: 'partials/defect-edit.html',
             controller: 'DefectNewCtrl'
         }).
-        when('/projects/:project/defects/:defect', {
+        when('/:domain/projects/:project/defects/:defect', {
             templateUrl: 'partials/defect-detail.html',
             controller: 'DefectDetailCtrl'
         }).

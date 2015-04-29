@@ -6,14 +6,37 @@ var openQualityControllers = angular.module('openQualityControllers', []);
 
 openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
     function($scope, $routeParams, Users, QCUtils) {
+        $scope.domain = null;
         $scope.project = $routeParams.project || 'Projects';
-        $scope.projects = [];
+        $scope.domains = {};
         $scope.loading = false;
+    
+        // Get all domains
+        ALM.getDomains(function(err, domains) {
+            if (err) {
+                console.log(err)
+                return;
+            }
+
+            console.log(domains);
+            // Get all project for each domain
+            async.each(domains, function(dom, callback) {
+                ALM.getProjects(dom, function(projects) {
+                    $scope.domains[dom] = projects;
+                    callback();
+                }, function() {
+                    callback('cannot init projects')
+                });
+            }, function(err) {
+                $scope.$apply();
+            });
+        });
 
         $scope.$on('projectChanged', function(event, data) {
             if (data != $scope.project) {
                 console.log('Project changed', data);
-                $scope.project = data;
+                $scope.domain = data[0];
+                $scope.project = data[1];
                 if ($scope.project != null) {
                     Users.update();
                     QCUtils.update();
@@ -56,9 +79,10 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
 
 openQualityControllers.controller('ProjectListCtrl', ['$scope',
     function($scope) {
-        ALM.getProjects(
+        $scope.domain = ALM.getCurrentDomain();
+
+        ALM.getProjects($scope.domain,
             function(prjs) {
-                console.log('loaded prjs', prjs);
                 $scope.projects = prjs;
                 $scope.$apply();
             },
@@ -69,17 +93,20 @@ openQualityControllers.controller('ProjectListCtrl', ['$scope',
 
 openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', 'Users',
     function($scope, $routeParams, Users) {
+        $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
-        ALM.setCurrentProject($scope.project);
+        ALM.setCurrentProject($scope.domain, $scope.project);
 
-        $scope.$emit('projectChanged', $scope.project);
+        $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
     }]);
 
 openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
     function($scope, $routeParams, Users, QCUtils) {
+        $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
-        ALM.setCurrentProject($scope.project);
-        $scope.$emit('projectChanged', $scope.project);
+        ALM.setCurrentProject($scope.domain, $scope.project);
+
+        $scope.$emit('projectChanged', [$scope.domain,$scope.project]);
         $scope.Users = Users;
 
         $scope.statuses = QCUtils.fields.status.Values;
@@ -136,7 +163,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         }
 
         $scope.showDefect = function(id) {
-            location.hash = '/projects/'+$scope.project+'/defects/'+id;
+            location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+id;
         }
 
         // Main
@@ -145,14 +172,14 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
 
 openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
     function($scope, $routeParams, Users, QCUtils) {
-        var IMGS_SUFFIX = ['.png', '.bmp', '.jpg', '.jpeg', '.gif'];
+        $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
-        $scope.users = Users.users;
-
-        ALM.setCurrentProject($scope.project);
         $scope.$emit('projectChanged', $scope.project);
+        
+        ALM.setCurrentProject($scope.domain, $scope.project);
 
+        $scope.users = Users.users;
         $scope.getFileSizeString = Utils.getFileSizeString;
 
         $scope.isImg = function(filename) {
@@ -228,7 +255,10 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
 openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
     function($scope, $routeParams, Users, QCUtils) {
-        $scope.$emit('projectChanged', $scope.project);
+        $scope.domain = $routeParams.domain;
+        $scope.project = $routeParams.project;
+        $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
+
         $scope.newDefect = true;
         $scope.defect = {};
 
@@ -239,9 +269,18 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'U
 
         $scope.createDefect = function(defect) {
             console.log(defect);
+            angular.forEach($scope.defectedit, function(value, key) {
+                if(key[0] == '$') return;
+                console.log(key, value.$pristine)
+            });
             ALM.createDefect(defect);
         }
     }]);
+
+/**
+ * Constants
+ */
+var IMGS_SUFFIX = ['.png', '.bmp', '.jpg', '.jpeg', '.gif'];
 
 var SEVERITY_ICONS = [
     null,

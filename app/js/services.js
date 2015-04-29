@@ -10,7 +10,7 @@ openQualityServices.service('Users', function() {
     this.users = {};
 
     this.update = function(callback) {
-        var cache = sessionStorage.getItem('users.'+ALM.PROJECT);
+        var cache = sessionStorage.getItem('users.'+ALM.getCurrentProject());
         if (cache) {
             this.users = JSON.parse(cache);
             return;
@@ -18,7 +18,7 @@ openQualityServices.service('Users', function() {
 
         ALM.getUsers(function(users) {
             that.users = users;
-            sessionStorage.setItem('users.'+ALM.PROJECT, JSON.stringify(users));
+            sessionStorage.setItem('users.'+ALM.getCurrentProject(), JSON.stringify(users));
             console.log('Users list updated');
         }, function() {});
     }
@@ -49,7 +49,7 @@ openQualityServices.service('QCUtils', function() {
     this.fields = {};
 
     this.update = function() {
-        var cache = sessionStorage.getItem('fields.'+ALM.PROJECT);
+        var cache = sessionStorage.getItem('fields.'+ALM.getCurrentProject());
         if (cache) {
             this.fields = JSON.parse(cache);
             return;
@@ -80,8 +80,8 @@ openQualityServices.service('QCUtils', function() {
                             }
                         }
                         
-                        sessionStorage.setItem('fields.'+ALM.PROJECT, JSON.stringify(that.fields));
-                        console.log('Updated fields for project '+ ALM.PROJECT);
+                        sessionStorage.setItem('fields.'+ALM.getCurrentProject(), JSON.stringify(that.fields));
+                        console.log('Updated fields for project '+ ALM.getCurrentProject());
                     }, function() {
                         console.log('Fail');
                     });

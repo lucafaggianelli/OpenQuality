@@ -1,7 +1,7 @@
 <h1 ng-show="newDefect">New Defect</h1>
 <h1 ng-show="!newDefect">#{{defect.id}} {{defect.name}}</h1>
 
-<form id="defect-detail">
+<form id="defect-edit" name="defectedit">
     <div class="form-group">
         <label class="control-label">Description</label>
         <textarea class="form-control" ng-model="defect.description"></textarea>
