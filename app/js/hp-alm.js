@@ -40,8 +40,11 @@ ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
             onError();
             if (response.status == 401) {
                 console.log('Not logged in');
-                sessionStorage.setItem('redirectAfterLogin', location.hash);
-                location.hash = '/login';
+                // Fix #28, avoid self redirect to login
+                if (location.hash != '#/login') {
+                    sessionStorage.setItem('redirectAfterLogin', location.hash);
+                    location.hash = '/login';
+                }
             }
         },
         xhrFields: {

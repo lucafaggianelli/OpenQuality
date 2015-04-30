@@ -89,6 +89,7 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
                     $scope.$emit('loggedIn', username);
                     location.hash = sessionStorage.getItem('redirectAfterLogin') || '/';
                     sessionStorage.removeItem('redirectAfterLogin');
+                    console.log('redirecting to', location.hash);
                 },
                 function(data) {
                     console.log('logged out', data);
