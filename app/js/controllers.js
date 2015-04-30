@@ -4,38 +4,53 @@
 
 var openQualityControllers = angular.module('openQualityControllers', []);
 
-openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
+openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
     function($scope, $routeParams, Users, QCUtils) {
         $scope.domain = null;
         $scope.project = $routeParams.project || 'Projects';
-        $scope.domains = {};
+        $scope.domains = null;
         $scope.loading = false;
         $scope.user = ALM.getLoggedInUser();
 
-        // Get all domains
-        ALM.getDomains(function(err, domains) {
-            if (err) {
-                console.log(err);
-                return;
-            }
+        var loadAllDomains = function() {
+            // Get all domains
+            ALM.getDomains(function(err, domains) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
 
-            // Get all project for each domain
-            async.each(domains, function(dom, callback) {
-                ALM.getProjects(dom, function(projects) {
-                    $scope.domains[dom] = projects;
-                    callback();
-                }, function() {
-                    callback('cannot init projects')
+                $scope.domains = {};
+                // Get all project for each domain
+                async.each(domains, function(dom, callback) {
+                    ALM.getProjects(dom, function(projects) {
+                        $scope.domains[dom] = projects;
+                        callback();
+                    }, function() {
+                        callback('cannot init projects')
+                    });
+                }, function(err) {
+                    $scope.$apply();
                 });
-            }, function(err) {
-                $scope.$apply();
             });
-        });
-
+        }
+        
+        ALM.tryLogin(
+            function(username) {
+                console.log('trylogin: logged in as', username);
+                $scope.user = username;
+                loadAllDomains();
+            },
+            function(error) {
+                location.hash = '/login';
+            }
+        );
+        
         $scope.$on('loggedIn', function(event, data) {
             if (data) {
                 // Logged in
                 $scope.user = ALM.getLoggedInUser();
+                loadAllDomains();
             } else {
                 // Logged out
                 $scope.user = null;
@@ -58,13 +73,7 @@ openQualityControllers.controller('NavCtrl', ['$scope', '$routeParams', 'Users',
 
 openQualityControllers.controller('HomeCtrl', ['$scope', '$location',
     function($scope, $location) {
-       ALM.tryLogin(
-            function(username) {
-            },
-            function(error) {
-                location.hash = '/login';
-            }
-        );
+       
     }]);
 
 openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',

@@ -82,6 +82,7 @@ ALM.login = function (username, password, onSuccess, onError) {
 ALM.tryLogin = function tryLogin(onLogin, onError) {
     ALM.ajax("rest/is-authenticated",
     function(response) {
+        loggedInUser = response.Username;
         onLogin(response.Username);
     },
     function(err) {
