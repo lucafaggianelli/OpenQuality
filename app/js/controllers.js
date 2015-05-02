@@ -128,6 +128,8 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
     function($scope, $routeParams, Users, QCUtils) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
+        $scope.pageSize = 50;
+        $scope.currentPage = 1;
         //ALM.setCurrentProject($scope.domain, $scope.project);
 
         $scope.$emit('projectChanged', [$scope.domain,$scope.project]);
@@ -163,6 +165,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
 
             ALM.getDefects(
                 function onSuccess(defects, totalCount) {
+                    $scope.totalPages = new Array(Math.ceil(totalCount / $scope.pageSize));
                     $scope.defects = defects;
 
                     // Status table row class
@@ -177,14 +180,21 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                 function onError() {
                     console.log('error getting defects')
                 },
-                queryString, fields);
+                queryString, fields, $scope.pageSize, ($scope.currentPage-1) * $scope.pageSize + 1);
+        };
+
+        $scope.setPage = function(page) {
+            if (page <= 0 || page > $scope.totalPages.length)
+                return;
+            $scope.currentPage = page;
+            $scope.getDefects();
         };
 
         $scope.updatePreset = function(preset) {
             $scope.preset = preset;
             localStorage.setItem('defectsFilter', JSON.stringify(preset));
             $scope.getDefects();
-        }
+        };
 
         $scope.showDefect = function(id) {
             location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+id;

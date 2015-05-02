@@ -247,10 +247,12 @@ ALM.getDefects = function getDefects(cb, errCb, query, fields, pageSize, startIn
     var queryParam = "query={" + query + "}";
     var pageSizeParam = "page-size=" + pageSize;
     var startIndexParam = "start-index=" + startIndex;
-    var queryString = [queryParam, 
+    var queryString = [
+        queryParam,
         fieldsParam, 
         pageSizeParam, 
-        startIndexParam].join('&');
+        startIndexParam
+    ].join('&');
 
     var path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +

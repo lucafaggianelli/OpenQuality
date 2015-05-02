@@ -67,3 +67,19 @@
         </tr>
     </tbody>
 </table>
+
+<nav ng-show="totalPages.length > 1">
+  <ul class="pagination">
+    <li ng-class="{'disabled':currentPage==1}">
+      <a href="" aria-label="Previous" ng-click="setPage(currentPage-1)" ng-class="{'disabled':currentPage==1}">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li ng-repeat="i in totalPages track by $index" ng-class="{'active':$index+1 == currentPage}"><a href="" ng-click="setPage($index+1)">{{$index+1}}</a></li>
+    <li ng-class="{'disabled':currentPage==totalPages.length}">
+      <a href="" aria-label="Next" ng-click="setPage(currentPage+1)">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
