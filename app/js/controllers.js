@@ -63,6 +63,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
                 console.log('Project changed to', data);
                 $scope.domain = data[0];
                 $scope.project = data[1];
+                ALM.setCurrentProject($scope.domain, $scope.project);
                 if ($scope.project != null) {
                     Users.update();
                     QCUtils.update();
@@ -118,7 +119,7 @@ openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams'
     function($scope, $routeParams, Users) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
-        ALM.setCurrentProject($scope.domain, $scope.project);
+        //ALM.setCurrentProject($scope.domain, $scope.project);
 
         $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
     }]);
@@ -127,7 +128,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
     function($scope, $routeParams, Users, QCUtils) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
-        ALM.setCurrentProject($scope.domain, $scope.project);
+        //ALM.setCurrentProject($scope.domain, $scope.project);
 
         $scope.$emit('projectChanged', [$scope.domain,$scope.project]);
         $scope.Users = Users;
@@ -163,7 +164,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             ALM.getDefects(
                 function onSuccess(defects, totalCount) {
                     $scope.defects = defects;
-                    
+
                     // Status table row class
                     for (var i in $scope.defects) {
                         if ($scope.defects[i].status) {
@@ -174,7 +175,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                     $scope.$apply();
                 },
                 function onError() {
-                    console.log('err')
+                    console.log('error getting defects')
                 },
                 queryString, fields);
         };
@@ -193,14 +194,14 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.getDefects();
     }]);
 
-openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
-    function($scope, $routeParams, Users, QCUtils) {
+openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', '$filter',
+    function($scope, $routeParams, Users, QCUtils, $filter) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
-        $scope.$emit('projectChanged', $scope.project);
-        
-        ALM.setCurrentProject($scope.domain, $scope.project);
+        //ALM.setCurrentProject($scope.domain, $scope.project);
+
+        $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
 
         $scope.users = Users.users;
         $scope.getFileSizeString = Utils.getFileSizeString;
@@ -214,6 +215,84 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 }
             }
             return false;
+        };
+
+        $scope.addAttachment = function() {
+            var fileInput = angular.element('#new-attach-file')[0];
+            var formData = new FormData();
+
+            if (fileInput.files.length == 1) {
+                var file = fileInput.files[0];
+
+                // Add the file to the request.
+                formData.append('file', file, file.name);
+                formData.append('filename', file.name);
+                console.log('file is '+file.name);
+            }
+
+            if ($scope.newAttachDesc) {
+                formData.append('description', $scope.newAttachDesc);
+            }
+
+            ALM.addAttachment($scope.defect.id, formData, function(err, data) {
+                console.log(err, data);
+            });
+        };
+
+        $scope.addComment = function() {
+            ALM.getDefects(function(defect, count) {
+                if (count == 1)
+                    defect = defect[0];
+                else {
+                    console.log('expected 1 defect, got '+count);
+                    return;
+                }
+
+                var html = '';
+                var firstComment = !defect['dev-comments'];
+
+                // If first comment, need <html>
+                if (firstComment)
+                    html += COMMENT_HTML_START;
+
+                html += '<div align="left">';
+
+                // Divider if not the first comment
+                if (!firstComment)
+                    html += COMMENT_DIVIDER;
+
+                // Header
+                html += '<font face="Arial" color="#000080" size="1"><span style="font-size:8pt"><b>';
+                html += Users.getName(ALM.getLoggedInUser());
+                html += ' &lt;'+ALM.getLoggedInUser()+'&gt;, ';
+                html += $filter('date')(new Date(),'yyyy/MM/dd HH:mm:ss')+':';
+                html += '</b></span></font></div>';
+
+                // Body
+                html += '<div align="left"><font face="Arial"><span style="font-size:9pt">';
+                html += $scope.newComment;
+                html += '</span></font></div>';
+                
+                // If first comment, need </html>
+                if (firstComment)
+                    html += COMMENT_HTML_END;
+
+                // Append the comment
+                if (!firstComment) {
+                    var pos = defect['dev-comments'].indexOf('</body>');
+                    var html = defect['dev-comments'].substr(0, pos) + html + 
+                        defect['dev-comments'].substr(pos);
+                }
+                
+                console.log(html);
+                ALM.saveDefect(function() {
+                }, function() {
+                }, {id: $scope.defect.id, 'dev-comments': html},
+                    $scope.defect);
+
+            }, function() {
+                console.log('error');
+            }, 'id["'+$scope.defect_id+'"]', ['dev-comments']);
         };
 
         var queryString = 'id["'+$scope.defect_id+'"]',
@@ -235,9 +314,11 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     // Comments - prettify
                     if ($scope.defect['dev-comments']) {
                         var tmp;
-                        $scope.defect.comments = $scope.defect['dev-comments'].replace(/<[^>]+>/gm, '').split(/_{3,}/g).map(function(comment) {
+                        $scope.defect.comments = $scope.defect['dev-comments']
+                                .replace(/<[^>]+>/gm, '')
+                                .split(/_{3,}/g).map(function(comment) {
                             //tmp = comment.match(/(.+)\s+&lt;.*&gt;,\s+([0-9\/]+):/);
-                            tmp = comment.split(/(.+)\s+&lt;.*&gt;,\s+([0-9\/]+):/);
+                            tmp = comment.split(/(.+)\s+&lt;.*&gt;,\s+([0-9\/]+\s*[0-9:]*)\s*:/);
                             if (tmp && tmp.length == 4)
                                 return {
                                     user: tmp[1],
@@ -249,6 +330,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                                     date: null,
                                     content: comment };
                         });
+                        $scope.defect.comments.reverse();
                     }
 
                     // Severity icon
@@ -319,3 +401,7 @@ var STATUS_CLASSES = {
     Fixed: 'danger',
     Rejected: 'danger',
 }
+
+var COMMENT_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">&nbsp;&nbsp;</span></font></div>';
+var COMMENT_HTML_END = '<div align="left">&nbsp;&nbsp;</div></body></html>';
+var COMMENT_DIVIDER = '<font face="Arial"><span style="font-size:9pt"><br /></span></font><font face="Arial" color="#000080"><span style="font-size:9pt"><b>________________________________________</b></span></font><font face="Arial"><span style="font-size:9pt"><br /></span></font>';

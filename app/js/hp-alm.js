@@ -147,6 +147,26 @@ function convertFields(entities) {
     });
   }
 
+ALM.addAttachment = function(defectId, formData, callback) {
+    var path = "rest/domains/" + DOMAIN +
+               "/projects/" + PROJECT +
+               "/defects/" + defectId + "/attachments";
+
+    $.ajax({
+        url: API_URL + path,
+        data: formData,
+        processData: false,
+        contentType: false,
+        type: 'POST',
+        success: function(data){
+            callback(null, data);
+        },
+        error: function(data){
+            callback('cant post form', data);
+        }
+    });
+}
+
 ALM.getDefectAttachments = function getDefectAttachments(defectId, cb, errCb) {
     var path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +
@@ -264,9 +284,11 @@ ALM.saveDefect = function saveDefect(cb, errCb, defect, lastSavedDefect) {
       start = function start() {
         lock();
       },
+
       lock = function lock() {
         verify(); // TODO locking error -> afterUnlock
       },
+
       verify = function verify() {
         var fields = Object.keys(defect);
         ALM.getDefects(function onSuccess(defects) {
@@ -290,12 +312,16 @@ ALM.saveDefect = function saveDefect(cb, errCb, defect, lastSavedDefect) {
         // actual save
         var path = defectUrl,
             xml = convertFieldsBack(changedFields, 'defect');
+
+        console.log(xml);
+
         ALM.ajax(path, function onSuccess() {
           unlock(); // always unlock after save
         }, function onError(saveError) {
           error = saveError;
           unlock(); // always unlock after error
         }, 'PUT', xml, 'application/xml');
+        unlock();
       },
       unlock = function unlock() {
         afterUnlock();

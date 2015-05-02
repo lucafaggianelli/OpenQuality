@@ -40,12 +40,45 @@
     </div>
 
 
+    <!-- Comments -->
+    <div class="panel panel-default">
+        <div class="panel-heading"><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> <b>Comments</b></div>
+
+        <div class="list-group">
+            <a class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-comment-modal">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a comment...</a>
+            <div class="list-group-item" ng-repeat="comment in defect.comments">
+                <p class="list-group-item-heading"><b>{{comment.user}}</b> &middot; <small>{{comment.date}}</small></p>
+                <p class="list-group-item-text" ng-bind-html="comment.content"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-comment-modal" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">New comment</h4>
+          </div>
+          <div class="modal-body">
+            <textarea class="form-control" rows="3" ng-model="newComment"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="addComment()">Add comment</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
     <!-- Attachments -->
     <div class="panel panel-default">
         <div class="panel-heading"><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> <b>Attachments</b></div>
 
         <div class="list-group">
-            <a class="list-group-item list-group-item-info" href="#"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file...</a>
+            <a class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-attach-modal">
+<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file...</a>
             <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
                 <p><span class="glyphicon glyphicon-file" aria-hidden="true"></span><span ng-if="attachment.description"> - {{attachment.description}}</span
                     > {{attachment.name}} ({{getFileSizeString(attachment['file-size'])}} - {{attachment['last-modified']}})</p>
@@ -54,20 +87,26 @@
         </div>
     </div>
 
-    <!-- Comments -->
-    <div class="panel panel-default">
-        <div class="panel-heading"><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> <b>Comments</b></div>
-
-        <div class="list-group">
-            <a class="list-group-item list-group-item-info" href="#"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a comment...</a>
-            <div class="list-group-item" ng-repeat="comment in defect.comments">
-                <h4 class="list-group-item-heading">{{comment.user}} - {{comment.date}}</h4>
-                <p class="list-group-item-text" ng-bind-html="comment.content"></p>
-            </div>
-        </div>
-    </div>
+    <div id="new-attach-modal" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">New attachment</h4>
+          </div>
+          <div class="modal-body">
+            <form>
+              <input type="text" class="form-control" ng-model="newAttachDesc"></textarea>
+              <input type="file" name="file" class="form-control" id="new-attach-file"></textarea>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="addAttachment()">Add attachment</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 
     <div class="alert alert-danger" ng-show="errorMessage">{{errorMessage}}</div>
-    <button ng-show="!newDefect" ng-click="save()" class="ng-class: saveEnabledClass(); btn btn-primary">Save</button>
-    <button ng-show="newDefect" ng-click="createDefect()" class="ng-class: saveEnabledClass(); btn btn-primary">Create</button>
 </form>
