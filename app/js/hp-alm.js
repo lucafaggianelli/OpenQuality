@@ -7,11 +7,9 @@ var ALM = {};
 var loggedInUser = null;
 window.ALM = ALM; // TODO for debug purpose
 
-ALM.config = function(apiUrl, domain) {
-    API_URL = apiUrl;
-    DOMAIN = domain;
-}
-
+// Setters / Getters
+ALM.setServerAddress = function(url) { API_URL = url; }
+ALM.getServerAddress = function() { return API_URL; }
 ALM.getCurrentDomain  = function() { return DOMAIN; }
 ALM.getCurrentProject = function() { return PROJECT; }
 ALM.getLoggedInUser = function() { return loggedInUser; }
@@ -41,7 +39,7 @@ ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
             if (response.status == 401) {
                 console.log('Not logged in');
                 // Fix #28, avoid self redirect to login
-                if (location.hash != '#/login') {
+                if (location.hash != '#/login' && location.hash != '#/settings') {
                     sessionStorage.setItem('redirectAfterLogin', location.hash);
                     location.hash = '/login';
                 }

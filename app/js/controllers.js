@@ -4,8 +4,8 @@
 
 var openQualityControllers = angular.module('openQualityControllers', []);
 
-openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
-    function($scope, $routeParams, Users, QCUtils) {
+openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', 'Settings',
+    function($scope, $routeParams, Users, QCUtils, Settings) {
         $scope.domain = null;
         $scope.project = $routeParams.project || 'Projects';
         $scope.domains = null;
@@ -34,18 +34,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
                 });
             });
         }
-        
-        ALM.tryLogin(
-            function(username) {
-                console.log('trylogin: logged in as', username);
-                $scope.user = username;
-                loadAllDomains();
-            },
-            function(error) {
-                location.hash = '/login';
-            }
-        );
-        
+
         $scope.$on('loggedIn', function(event, data) {
             if (data) {
                 // Logged in
@@ -70,11 +59,35 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
                 }
             }
         });
+
+        // If no server set, go to settings
+        if (!Settings.settings.serverAddress) {
+            console.log('server not set');
+            location.hash = '/settings';
+            return;
+        }
+
+        console.log('server is ' + Settings.settings.serverAddress);
+        ALM.setServerAddress(Settings.settings.serverAddress);
+        
+        ALM.tryLogin(
+            function(username) {
+                console.log('trylogin: logged in as', username);
+                $scope.user = username;
+                loadAllDomains();
+            },
+            function(error) {
+                console.log('trylogin: not logged in')
+            }
+        );
     }]);
 
 openQualityControllers.controller('HomeCtrl', ['$scope', '$location',
     function($scope, $location) {
-       
+        ALM.tryLogin(
+            function(username) { },
+            function(error) { }
+        );
     }]);
 
 openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
@@ -82,7 +95,7 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
         $scope.login = function() {
             var username = $('#username').val(),
                 password = $('#password').val();
-            
+
             ALM.login(username, password,
                 function(data) {
                     console.log('logged in as',username);
@@ -101,6 +114,17 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
     }
 ]);
 
+openQualityControllers.controller('SettingsCtrl', ['$scope', 'Settings',
+    function($scope, Settings) {
+        $scope.settings = Settings.settings;
+
+        $scope.saveSettings = function(settings) {
+            console.log('saving', settings)
+            Settings.save(settings);
+            ALM.setServerAddress(Settings.settings.serverAddress); // TODO move to ALM
+        }
+    }]);
+
 openQualityControllers.controller('ProjectListCtrl', ['$scope',
     function($scope) {
         $scope.domain = ALM.getCurrentDomain();
@@ -113,7 +137,7 @@ openQualityControllers.controller('ProjectListCtrl', ['$scope',
             function(err) {
                 console.log('cant load projects', err);
             });
-  }]);
+    }]);
 
 openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', 'Users',
     function($scope, $routeParams, Users) {

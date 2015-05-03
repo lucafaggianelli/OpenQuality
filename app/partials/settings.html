@@ -1,0 +1,31 @@
+<div class="page-header">
+    <h1>Settings</h1>
+</div>
+
+<form name="settingsForm" novalidate>
+    <div class="form-group" ng-class="{'has-error':settingsForm.serverAddress.$invalid}">
+        <label for="serverAddress" class="control-label">Server address</label>
+        <input class="form-control" type="url" ng-model="settings.serverAddress" name="serverAddress"
+            required autocomplete="off" autocorrect="off"
+            autocapitalize="off" spellcheck="false" placeholder="https://"/>
+    </div>
+
+    <div class="form-group">
+        <label>Account</label>
+        <input type="text" class="form-control" placeholder="username"/>
+    </div>
+
+    <div class="form-group">
+        <input type="password" class="form-control" placeholder="password"/>
+    </div>
+
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" value="">
+        Remeber login
+      </label>
+    </div>
+
+    <button type="submit" class="btn btn-success" ng-click="saveSettings(settings)"
+        ng-disabled="settingsForm.$invalid">Save</button>
+</form>

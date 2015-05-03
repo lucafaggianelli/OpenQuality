@@ -23,6 +23,10 @@ openQualityApp.config(['$routeProvider',
             templateUrl: 'partials/login.html',
             controller: 'LoginCtrl'
         }).
+        when('/settings', {
+            templateUrl: 'partials/settings.html',
+            controller: 'SettingsCtrl'
+        }).
         when('/:domain/projects', {
             templateUrl: 'partials/project-list.html',
             controller: 'ProjectListCtrl'
@@ -57,8 +61,6 @@ function init() {
             }
         }));
     }
-
-    ALM.config('http://blqsrv724.dl.net:8080/qcbin/','MC');
 }
 
 init();

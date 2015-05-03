@@ -4,7 +4,6 @@
 
 var openQualityServices = angular.module('openQualityServices', []);
 
-
 openQualityServices.service('Users', function() {
     var that = this;
     this.users = {};
@@ -42,6 +41,15 @@ openQualityServices.service('Users', function() {
             return name;
         }
     };
+});
+
+openQualityServices.service('Settings', function() {
+    this.settings = JSON.parse(localStorage.getItem('settings')) || {};
+    
+    this.save = function(settings) {
+        this.settings = settings;
+        localStorage.setItem('settings', JSON.stringify(settings));
+    }
 });
 
 openQualityServices.service('QCUtils', function() {
