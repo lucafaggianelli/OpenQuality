@@ -233,11 +233,10 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
-        //ALM.setCurrentProject($scope.domain, $scope.project);
 
         $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
 
-        $scope.users = Users.users;
+        $scope.Users = Users;
         $scope.getFileSizeString = Utils.getFileSizeString;
 
         $scope.isImg = function(filename) {
@@ -336,14 +335,16 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     "owner",
                     "detected-by",
                     "status",
-                    "user-09", //Fixed in version
-                    "user-01", //Terminal
+                    "user-09", // Fixed in version
+                    "user-01", // Terminal
+                    "user-03", // Discipline
             ];
 
         ALM.getDefects(
             function onSuccess(defects, totalCount) {
                 if (totalCount == 1) {
                     $scope.defect = defects[0];
+                    console.log($scope.defect);
     
                     // Comments - prettify
                     if ($scope.defect['dev-comments']) {
@@ -392,25 +393,35 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             queryString, fields);
     }]);
 
-openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
-    function($scope, $routeParams, Users, QCUtils) {
+openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', '$filter',
+    function($scope, $routeParams, Users, QCUtils, $filter) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
 
         $scope.newDefect = true;
-        $scope.defect = {};
+        $scope.defect = {
+            status: 'New',
+            severity: '3-Minor functional',
+        };
 
-        $scope.users = Users.users;
-        $scope.statuses = QCUtils.fields.status.Values;
-        $scope.versions = QCUtils.fields['detection-version'].Values;
-        $scope.severities = QCUtils.fields.severity.Values;
+        $scope.users = Utils.obj2arr(Users.users);
+        $scope.fields = QCUtils.fields;
+        console.log($scope.users);
 
         $scope.createDefect = function(defect) {
+            // TODO Fix to HTML format
+            // Workaround for plain text description
+            defect.description = DESCRIPTION_HTML_START + defect.description + DESCRIPTION_HTML_END;
+
+            // Add pre-defined fields
+            defect['detected-by'] = ALM.getLoggedInUser();
+            defect['creation-time'] = $filter('date')(new Date(), 'yyyy/MM/dd HH:mm:ss');
+
             console.log(defect);
             angular.forEach($scope.defectedit, function(value, key) {
                 if(key[0] == '$') return;
-                console.log(key, value.$pristine)
+                console.log(key, value.$dirty)
             });
             ALM.createDefect(defect);
         }
@@ -435,6 +446,9 @@ var STATUS_CLASSES = {
     Fixed: 'danger',
     Rejected: 'danger',
 }
+
+var DESCRIPTION_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">';
+var DESCRIPTION_HTML_END = '</span></font></div>';
 
 var COMMENT_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">&nbsp;&nbsp;</span></font></div>';
 var COMMENT_HTML_END = '<div align="left">&nbsp;&nbsp;</div></body></html>';

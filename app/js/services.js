@@ -73,21 +73,31 @@ openQualityServices.service('QCUtils', function() {
                 ALM.getProperties('customization/entities/defect/lists',
                     function(json) {
                         var tmp;
+                        var count = 0;
                         for (var i in json.List) {
                             for (var j in that.fields) {
                                 if (that.fields[j].Type == 'LookupList' && 
-                                        that.fields[j].List_Id == json.List[i].Id &&
-                                        json.List[i].Items.Item) {
+                                        that.fields[j].List_Id == json.List[i].Id) {
+
                                     tmp = json.List[i].Items.Item;
-                                    if (tmp.length === undefined)
-                                        that.fields[j].Values = tmp.value;
-                                    else
+                                    if (!tmp) {
+                                        // Handle 0 elements array
+                                        that.fields[j].Values = [];
+                                    } else if (tmp.length === undefined) {
+                                        // Handle 1 element array
+                                        that.fields[j].Values = [tmp.value];
+                                    } else {
+                                        // Handle 1+ elements array
                                         that.fields[j].Values = tmp.map(function(x){return x.value;});
-                                    break;
+                                    }
+                                    console.log('Lookuplist',that.fields[j].Name,that.fields[j].Values);
+                                    count++;
+                                    // Dont call break as some fields share the same list
                                 }
                             }
                         }
-                        
+                        console.log('Total lookup list '+count);
+
                         sessionStorage.setItem('fields.'+ALM.getCurrentProject(), JSON.stringify(that.fields));
                         console.log('Updated fields for project '+ ALM.getCurrentProject());
                     }, function() {

@@ -112,18 +112,27 @@ function convertFields(entities) {
     });
 }
 
-  function convertFieldsBack(entity, type) {
+function convertFieldsBack(entity, type) {
     var start = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>' +
         '<Entity Type="' + type + '">' + '<Fields>',
         middle = '',
         end = '</Fields></Entity>';
 
     for (var fieldName in entity) {
-      middle += '<Field Name="' + fieldName +'">' +
-        '<Value>' + escapeXml(entity[fieldName]) + '</Value></Field>';
+        var values = entity[fieldName];
+        middle += '<Field Name="' + fieldName + '">';
+        if (typeof(values) === 'string') {
+            values = [values];
+        }
+
+        for (var i in values) {
+            middle += '<Value>'+escapeXml(values[i])+'</Value>';
+        }
+        middle += '</Field>';
     }
+
     return start + middle + end;
-  }
+}
 
   function escapeXml (s) {
     if (!s)
@@ -222,6 +231,11 @@ ALM.getUsers = function getUsers(cb, errCb) {
                 email: el.email,
                 phone: el.phone,
             };
+
+            if (el.email)
+                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/'+md5(el.email)+'?d=identicon';
+            else
+                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/none?f=y';
         }
 
         cb(users);

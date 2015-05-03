@@ -3,37 +3,47 @@
 
 <form id="defect-edit" name="defectedit">
     <div class="form-group">
+        <label class="control-label">Summary</label>
+        <textarea class="form-control" ng-model="defect.summary"></textarea>
+    </div>
+
+    <div class="form-group">
         <label class="control-label">Description</label>
         <textarea class="form-control" ng-model="defect.description"></textarea>
     </div>
 
     <div class="form-group">
-        <label class="control-label">Detected in version</label>
-        <select class="form-control" type="text" ng-model="defect['detection-version']" ng-options="ver for ver in versions">
+        <label class="control-label">{{fields['detection-version'].Label}}</label>
+        <select class="form-control" ng-model="defect['detection-version']" ng-options="ver for ver in fields['detection-version'].Values">
         </select>
     </div>
 
     <div class="form-group">
         <label class="control-label">Assigned To</label>
-        <select ng-model="defect.owner" ng-options="user as user.fullname for (k, user) in users">
-        </select>
-        <!--
         <ui-select ng-model="defect.owner"
                 theme="bootstrap"
                 ng-disabled="disabled"
                 reset-search-input="false"
                 style="width: 300px;">
             <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
-            <ui-select-choices repeat="user.id as user.fullname for user in users">
-                <div ng-bind-html="v.fullname | highlight: $select.search"></div>
+            <ui-select-choices repeat="user.id as user in users | filter: $select.search">
+                <div class="media">
+                  <div class="media-left">
+                      <img class="media-object" ng-src="{{user.gravatar}}&s=32">
+                  </div>
+                  <div class="media-body">
+                    <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id">Media heading</h4>
+                    <small>{{user.email}}</small>
+                  </div>
+                </div>
             </ui-select-choices>
-            </ui-select>-->
+        </ui-select>
     </div>
 
     <div class="form-group">
-        <label class="control-label">Status</label>
+        <label class="control-label">{{fields.status.Label}}</label>
         <select name="status" class="form-control" ng-model="defect.status"
-                ng-options="status for status in statuses">
+                ng-options="status for status in fields.status.Values">
         </select>
     </div>
 
@@ -43,38 +53,28 @@
     </div>
 
     <div class="form-group">
-        <label class="control-label">Severity</label>
+        <label class="control-label">{{fields.severity.Label}}</label>
         <select name="severity" class="form-control" ng-model="defect.severity"
-                ng-options="sev for sev in severities">
+                ng-options="sev for sev in fields.severity.Values">
         </select>
     </div>
 
     <div class="form-group">
-        <label class="control-label">Resolution note</label>
-        <textarea class="form-control" ng-model="defect['user-63']"></textarea>
-    </div>
-
-    <div class="form-group" ng-show="defect.attachments">
-        <label class="control-label">Defect Attachments</label>
-        <div class="list-group">
-            <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
-                <span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}}
-                <p class="thumbnail" ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
-            </a>
-        </div>
+        <label class="control-label">{{ fields['user-01'].Label }}</label>
+        <select name="severity" class="form-control" ng-model="defect['user-01']"
+                ng-options="sev for sev in fields['user-01'].Values" multiple>
+        </select>
     </div>
 
     <div class="form-group">
-        <label class="control-label">Comments</label>
-        <div class="list-group">
-            <div class="list-group-item" ng-repeat="comment in defect.comments">
-                <h4 class="list-group-item-heading">{{comment.user}} - {{comment.date}}</h4>
-                <p class="list-group-item-text" ng-bind-html="comment.content"></p>
-            </div>
-        </div>
+        <label class="control-label">{{ fields['user-03'].Label }}</label>
+        <select name="severity" class="form-control" ng-model="defect['user-03']"
+                ng-options="val for val in fields['user-03'].Values">
+        </select>
     </div>
 
-    <div class="alert alert-danger" ng-show="errorMessage">{{errorMessage}}</div>
-    <button ng-show="!newDefect" ng-click="save()" class="ng-class: saveEnabledClass(); btn btn-primary">Save</button>
-    <button ng-show="newDefect" ng-click="createDefect(defect)" class="ng-class: saveEnabledClass(); btn btn-primary">Create</button>
+    <div class="form-group">
+        <button ng-show="!newDefect" ng-click="save(defect)" class="btn btn-primary">Save</button>
+        <button ng-show="newDefect" ng-click="createDefect(defect)" class="btn btn-primary">Create</button>
+    </div>
 </form>

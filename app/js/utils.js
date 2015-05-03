@@ -14,3 +14,11 @@ Utils.getFileSizeString = function(size) {
 
     return Math.max(size, 0.1).toFixed(1) + ' ' + BYTES_MAGNITUDES[i];
 }
+
+Utils.obj2arr = function(obj) {
+    var arr = [];
+    angular.forEach(obj, function(value, key) {
+        arr.push(value);
+    });
+    return arr;
+}

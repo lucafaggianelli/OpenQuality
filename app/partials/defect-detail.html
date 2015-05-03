@@ -10,7 +10,7 @@
         <div class="panel-body">
             <p>Detected in version <b>{{defect["detection-version"]}}</b> on <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span
                 > <b>{{defect["creation-time"]}}</b> by <span class="glyphicon glyphicon-user" aria-hidden="true"></span
-                > <b>{{Users.getName(defect["detected-by"])}}</b>
+                > <b>{{Users.getName(defect['detected-by'])}}</b>
             </p>
             
             <p>Affetcted terminal <span class="glyphicon glyphicon-phone" aria-hidden="true"></span> <b>{{defect['user-01']}}</b></p>
@@ -20,7 +20,8 @@
             <p ng-show="defect.status != 'Fixed'">Status <b>{{defect.status}}</b></p>
             <p ng-show="defect.status == 'Fixed'">Fixed in build <b>{{defect['user-09']}}</b></p>
             
-            <p>Assigned to <select ng-model="defect.owner" ng-options="user.id as user.fullname for (k, user) in users">
+            <p>Assigned to <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <b>{{Users.getName(defect['owner'])}}</b></p>
+            <!--<p>Assigned to <select ng-model="defect.owner" ng-options="user.id as user.fullname for (k, user) in Users.users">-->
         </select></p>
         </div>
     </div>
@@ -33,7 +34,7 @@
                 reset-search-input="false"
                 style="width: 300px;">
             <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
-            <ui-select-choices repeat="user in users | filter: $select.search">
+            <ui-select-choices repeat="user in Users.users | filter: $select.search">
                 <div ng-bind-html="user.fullname | highlight: $select.search"></div>
             </ui-select-choices>
         </ui-select>-->
