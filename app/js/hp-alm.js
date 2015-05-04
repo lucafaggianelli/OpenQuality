@@ -154,6 +154,20 @@ function convertFieldsBack(entity, type) {
     });
   }
 
+ALM.getProjectHistory = function(time, callback) {
+    var path = 'rest/domains/'+DOMAIN+
+        '/projects/'+PROJECT+'/audits';
+    var query = 'query={parent-type[defect];parent-id[*];time[> "'+time+'"]}';
+
+    console.log('history time',time)
+    ALM.ajax(path + '?' + query, function(history) {
+        callback(null, history);
+    }, function() {
+        callback('failed to get history');
+    });
+
+}
+
 ALM.addAttachment = function(defectId, formData, callback) {
     var path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +
@@ -233,9 +247,9 @@ ALM.getUsers = function getUsers(cb, errCb) {
             };
 
             if (el.email)
-                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/'+md5(el.email)+'?d=identicon';
+                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/'+md5(el.email)+'.jpg?d=identicon';
             else
-                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/none?f=y';
+                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/0000.jpg?f=y';
         }
 
         cb(users);

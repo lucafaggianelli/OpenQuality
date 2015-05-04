@@ -4,6 +4,70 @@
 
 var openQualityServices = angular.module('openQualityServices', []);
 
+openQualityServices.service('Notifications', function($filter, Users) {
+    var interval = null;
+    var lastUpdate = null;
+    var notification = null;
+
+    this.startNotifier = function(delaySec) {
+        if (interval) {
+            console.log('clearing interval')
+            clearInterval(interval);
+        }
+
+        console.log('starting notification daemon with delay of '+delaySec+'s');
+        lastUpdate = new Date();
+        // TODO will be called at beginning only if 'lastUpdate' is stored
+        // in localStorage
+        //notificationDaemon();
+        interval = setInterval(notificationDaemon, delaySec * 1000);
+    };
+
+    var notificationDaemon = function() {
+        ALM.getProjectHistory($filter('date')(lastUpdate, 'yyyy-MM-dd HH:mm:ss'), function(err, history) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            console.log(history, new Date());
+            lastUpdate = new Date();
+
+            var audit;
+            var body;
+            var property;
+            var user;
+            
+            if (parseInt(history.TotalResults) <= 0) {
+                console.log('Nothing new')
+                return;
+            }
+
+            //for (var i=0; i < history.Audit.length; i++) {
+            if (history.Audit.length > 0) {
+                audit = history.Audit[0]; // TODO i
+                if (!audit.Properties || audit.Properties == "")
+                    return; // TODO continue;
+
+                user = Users.getUser(audit.User);
+                property = (audit.Properties.Property || audit.Properties[0].Property).Label;
+                body = (DICT[property] || 'Updated '+property+' on') + ' defect #' + audit.ParentId;
+
+                console.log('notify', user.fullname, body, user.gravatar+'&s=60');
+                notification = new Notification(user.fullname, {body: body, icon: user.gravatar+'&s=60'});
+                notification.onclick = function(event) {
+                    console.log('got clicked',event);
+                };
+            }
+
+        });
+    }
+    
+    var DICT = {
+        'Comments': 'Commented'
+    }
+});
+
 openQualityServices.service('Users', function() {
     var that = this;
     this.users = {};
@@ -90,7 +154,7 @@ openQualityServices.service('QCUtils', function() {
                                         // Handle 1+ elements array
                                         that.fields[j].Values = tmp.map(function(x){return x.value;});
                                     }
-                                    console.log('Lookuplist',that.fields[j].Name,that.fields[j].Values);
+                                    //console.log('Lookuplist',that.fields[j].Name,that.fields[j].Values);
                                     count++;
                                     // Dont call break as some fields share the same list
                                 }

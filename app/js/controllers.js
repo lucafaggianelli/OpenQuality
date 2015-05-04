@@ -4,8 +4,8 @@
 
 var openQualityControllers = angular.module('openQualityControllers', []);
 
-openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', 'Settings',
-    function($scope, $routeParams, Users, QCUtils, Settings) {
+openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', 'Settings', 'Notifications',
+    function($scope, $routeParams, Users, QCUtils, Settings, Notifications) {
         $scope.domain = null;
         $scope.project = $routeParams.project || 'Projects';
         $scope.domains = null;
@@ -48,7 +48,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
         });
 
         $scope.$on('projectChanged', function(event, data) {
-            if (data != $scope.project) {
+            if (data[0] != $scope.domain && data[1] != $scope.project) {
                 console.log('Project changed to', data);
                 $scope.domain = data[0];
                 $scope.project = data[1];
@@ -56,6 +56,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
                 if ($scope.project != null) {
                     Users.update();
                     QCUtils.update();
+                    Notifications.startNotifier(5 * 60);
                 }
             }
         });
@@ -72,7 +73,6 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
         
         ALM.tryLogin(
             function(username) {
-                console.log('trylogin: logged in as', username);
                 $scope.user = username;
                 loadAllDomains();
             },
@@ -344,7 +344,6 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             function onSuccess(defects, totalCount) {
                 if (totalCount == 1) {
                     $scope.defect = defects[0];
-                    console.log($scope.defect);
     
                     // Comments - prettify
                     if ($scope.defect['dev-comments']) {
