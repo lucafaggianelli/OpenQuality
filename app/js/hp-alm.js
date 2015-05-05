@@ -159,7 +159,6 @@ ALM.getProjectHistory = function(time, callback) {
         '/projects/'+PROJECT+'/audits';
     var query = 'query={parent-type[defect];parent-id[*];time[> "'+time+'"]}';
 
-    console.log('history time',time)
     ALM.ajax(path + '?' + query, function(history) {
         callback(null, history);
     }, function() {
@@ -247,7 +246,7 @@ ALM.getUsers = function getUsers(cb, errCb) {
             };
 
             if (el.email)
-                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/'+md5(el.email)+'.jpg?d=identicon';
+                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/'+md5(el.email.toLowerCase())+'.jpg?d=identicon';
             else
                 users[el.Name].gravatar = 'http://www.gravatar.com/avatar/0000.jpg?f=y';
         }
@@ -329,6 +328,7 @@ ALM.saveDefect = function saveDefect(cb, errCb, defect, lastSavedDefect) {
             save(changedFields);
           } else {
             error = "There was an editing conflict! Please refresh";
+            console.log(oldDefect,lastSavedDefect);
             unlock();
           }
         }, function onError(checkoutError) {
@@ -364,6 +364,20 @@ ALM.saveDefect = function saveDefect(cb, errCb, defect, lastSavedDefect) {
   start();
 }
 
+ALM.updateStatus = function(defect, callback) {
+    var path = "rest/domains/" + DOMAIN +
+            "/projects/" + PROJECT +
+            "/defects/" + defect.id;
+
+    var xml = convertFieldsBack({status: defect.status}, 'defect');
+
+    ALM.ajax(path, function onSuccess() {
+            callback(null);
+        }, function onError(saveError) {
+            callback(saveError);
+        }, 'PUT', xml, 'application/xml');
+}
+
 ALM.createDefect = function(fields) {
       
     var url = "rest/domains/" + DOMAIN +
@@ -374,12 +388,16 @@ ALM.createDefect = function(fields) {
 
     console.log('will post to '+url, xml);
 
-    /*ALM.ajax(url,
-        function() {},
-        function() {},
+    ALM.ajax(url,
+        function(data) {
+            console.log('create defect success', data)
+        },
+        function(err) {
+            console.log('create defect error', err)
+        },
         'POST',
-        null,//convertFieldsBack(changedFields, 'defect');
-        'application/xml');*/
+        xml,//convertFieldsBack(changedFields, 'defect');
+        'application/xml');
 }
 
 ALM.getProperties = function(path, callback, err) {

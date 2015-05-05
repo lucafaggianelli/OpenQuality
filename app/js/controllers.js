@@ -230,6 +230,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
 
 openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', '$filter',
     function($scope, $routeParams, Users, QCUtils, $filter) {
+        var originalDefect = null;
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
@@ -237,6 +238,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
 
         $scope.Users = Users;
+        $scope.fields = QCUtils.fields;
         $scope.getFileSizeString = Utils.getFileSizeString;
 
         $scope.isImg = function(filename) {
@@ -249,6 +251,18 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             }
             return false;
         };
+
+        $scope.setStatus = function() {
+            console.log('status changed to', $scope.defect.status);
+            ALM.updateStatus($scope.defect, function(err) {
+                if (err) {
+                    console.log('cant update status:', err);
+                    return;
+                }
+
+                console.log('status changed');
+            });
+        }
 
         $scope.addAttachment = function() {
             var fileInput = angular.element('#new-attach-file')[0];
@@ -343,6 +357,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         ALM.getDefects(
             function onSuccess(defects, totalCount) {
                 if (totalCount == 1) {
+                    originalDefect = defects[0];
                     $scope.defect = defects[0];
     
                     // Comments - prettify
@@ -397,6 +412,7 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'U
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
+        $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
         $scope.newDefect = true;
         $scope.defect = {
@@ -406,16 +422,16 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'U
 
         $scope.users = Utils.obj2arr(Users.users);
         $scope.fields = QCUtils.fields;
-        console.log($scope.users);
 
         $scope.createDefect = function(defect) {
             // TODO Fix to HTML format
-            // Workaround for plain text description
+            // Surround with HTML and BODY tags
             defect.description = DESCRIPTION_HTML_START + defect.description + DESCRIPTION_HTML_END;
+            console.log(defect.description);
 
             // Add pre-defined fields
             defect['detected-by'] = ALM.getLoggedInUser();
-            defect['creation-time'] = $filter('date')(new Date(), 'yyyy/MM/dd HH:mm:ss');
+            defect['creation-time'] = $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
             console.log(defect);
             angular.forEach($scope.defectedit, function(value, key) {
@@ -429,6 +445,14 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'U
 /**
  * Constants
  */
+
+var TEXTANGULAR_TOOLBAR = "["+
+    "['bold','italics','underline','strikeThrough'],"+
+    "['ul','ol','indent','outdent'],"+
+    "['justifyLeft','justifyCenter','justifyRight'],"+
+    "['undo','redo']"+
+    "]";
+
 var IMGS_SUFFIX = ['.png', '.bmp', '.jpg', '.jpeg', '.gif'];
 
 var SEVERITY_ICONS = [
@@ -446,8 +470,10 @@ var STATUS_CLASSES = {
     Rejected: 'danger',
 }
 
-var DESCRIPTION_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">';
-var DESCRIPTION_HTML_END = '</span></font></div>';
+//var DESCRIPTION_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">';
+//var DESCRIPTION_HTML_END = '</span></font></div>';
+var DESCRIPTION_HTML_START = '<html><body>';
+var DESCRIPTION_HTML_END = '</body></html>';
 
 var COMMENT_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">&nbsp;&nbsp;</span></font></div>';
 var COMMENT_HTML_END = '<div align="left">&nbsp;&nbsp;</div></body></html>';

@@ -10,48 +10,58 @@ openQualityServices.service('Notifications', function($filter, Users) {
     var notification = null;
 
     this.startNotifier = function(delaySec) {
-        if (interval) {
-            console.log('clearing interval')
+        console.log('Starting notification daemon with delay of '+delaySec+'s');
+
+        if (interval)
             clearInterval(interval);
+
+        // Use the saved 'lastupdate' so you don't miss any notification
+        // or fallback to now
+        var tmp = localStorage.getItem('notif:lastUpdate');
+        if (tmp) {
+            lastUpdate = new Date(tmp);
+            getNotifications();
+        } else {
+            lastUpdate = new Date();
         }
 
-        console.log('starting notification daemon with delay of '+delaySec+'s');
-        lastUpdate = new Date();
-        // TODO will be called at beginning only if 'lastUpdate' is stored
-        // in localStorage
-        //notificationDaemon();
-        interval = setInterval(notificationDaemon, delaySec * 1000);
+        interval = setInterval(getNotifications, delaySec * 1000);
     };
 
-    var notificationDaemon = function() {
+    var getNotifications = function() {
         ALM.getProjectHistory($filter('date')(lastUpdate, 'yyyy-MM-dd HH:mm:ss'), function(err, history) {
             if (err) {
                 console.log(err);
                 return;
             }
 
-            console.log(history, new Date());
-            lastUpdate = new Date();
+            var now = new Date();
+            localStorage.setItem('notif:lastUpdate', now.toString());
+            lastUpdate = now;
 
             var audit;
             var body;
             var property;
             var user;
             
-            if (parseInt(history.TotalResults) <= 0) {
-                console.log('Nothing new')
+            if (parseInt(history.TotalResults) <= 0)
                 return;
-            }
 
+            console.log('Changes from '+lastUpdate+' to '+now, history);
+
+            // TODO bug #45
             //for (var i=0; i < history.Audit.length; i++) {
             if (history.Audit.length > 0) {
                 audit = history.Audit[0]; // TODO i
-                if (!audit.Properties || audit.Properties == "")
-                    return; // TODO continue;
 
                 user = Users.getUser(audit.User);
-                property = (audit.Properties.Property || audit.Properties[0].Property).Label;
-                body = (DICT[property] || 'Updated '+property+' on') + ' defect #' + audit.ParentId;
+
+                if (!audit.Properties || audit.Properties == "") {
+                    body = 'Updated defect #' + audit.ParentId;
+                } else {
+                    property = (audit.Properties.Property || audit.Properties[0].Property).Label;
+                    body = (DICT[property] || 'Updated '+property+' on') + ' defect #' + audit.ParentId;
+                }
 
                 console.log('notify', user.fullname, body, user.gravatar+'&s=60');
                 notification = new Notification(user.fullname, {body: body, icon: user.gravatar+'&s=60'});

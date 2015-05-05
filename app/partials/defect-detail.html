@@ -3,7 +3,7 @@
 </div>
 
 <form id="defect-detail">
-    <div ng-bind-html="defect.description"></div>
+    <div ta-bind ng-model="defect.description"></div>
 
     <div class="panel panel-default">
         <div class="panel-heading"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Info</div>
@@ -17,7 +17,11 @@
             
             <p>Severity <span class="glyphicon glyphicon-{{defect.severityIcon}}" aria-hidden="true"></span> <b>{{defect.severity}}</b></p>
 
-            <p ng-show="defect.status != 'Fixed'">Status <b>{{defect.status}}</b></p>
+            <p>Status <select
+                name="status" class="btn btn-default" ng-model="defect.status"
+                ng-options="status for status in fields.status.Values" ng-change="setStatus()"></select>
+            </p>
+
             <p ng-show="defect.status == 'Fixed'">Fixed in build <b>{{defect['user-09']}}</b></p>
             
             <p>Assigned to <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <b>{{Users.getName(defect['owner'])}}</b></p>
@@ -81,8 +85,8 @@
             <a class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-attach-modal">
 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file...</a>
             <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
-                <p><span class="glyphicon glyphicon-file" aria-hidden="true"></span><span ng-if="attachment.description"> - {{attachment.description}}</span
-                    > {{attachment.name}} ({{getFileSizeString(attachment['file-size'])}} - {{attachment['last-modified']}})</p>
+                <p><span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}} ({{getFileSizeString(attachment['file-size'])}} - {{attachment['last-modified']}})</p>
+                <p ng-if="attachment.description" ta-bind ng-model="attachment.description"></p>
                 <p class="thumbnail" ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
             </a>
         </div>

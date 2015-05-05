@@ -6,6 +6,7 @@ var openQualityApp = angular.module('openQualityApp', [
     'ngRoute',
     'ui.select',
     'ngSanitize',
+    'textAngular',
 
     'openQualityControllers',
     'openQualityServices',
