@@ -51,20 +51,28 @@ openQualityServices.service('Notifications', function($filter, Users) {
             var audit;
             var body, title, icon; // notification options
             
-            if (parseInt(history.TotalResults) <= 0)
+            if (parseInt(history.TotalResults) <= 0) {
                 return;
+            }
 
+            var lastAuditNew = lastAudit;
             var updatedDefects = [];
+            var users = [], usersIds = [];
             for (var i=0; i < history.Audit.length; i++) {
                 audit = history.Audit[i];
-                
-                if (parseInt(audit.Id) > lastAudit) {
-                    console.log('New audit',audit.Id);
-                    lastAudit = parseInt(audit.Id);
-                    //user = Users.getUser(audit.User);
-                } else {
-                    // Already fired a notification for this audit
+                audit.Id = parseInt(audit.Id);
+
+                // Already fired a notification for this audit
+                if (audit.Id <= lastAudit)
                     continue;
+
+                // Find the last audit ID
+                if (audit.Id > lastAuditNew)
+                    lastAuditNew = audit.Id;
+
+                if (usersIds.indexOf(audit.User) == -1) {
+                    usersIds.push(audit.User);
+                    users.push(Users.getUser(audit.User));
                 }
                 
                 // Filter duplicated defects
@@ -72,20 +80,35 @@ openQualityServices.service('Notifications', function($filter, Users) {
                     updatedDefects.push(audit.ParentId);
                 }
             }
-            localStorage.setItem('notif:lastAudit', lastAudit);
+            localStorage.setItem('notif:lastAudit', lastAuditNew);
+            lastAudit = lastAuditNew;
 
             if (!updatedDefects || updatedDefects.length == 0)
                 return;
 
-            // Build the body as 'Updated defects #1, #32, #90'
+            // Build title i.e.:
+            //   Luca Faggianelli + 3 others
+            title = users[0].fullname;
+            if (users.length > 1) {
+                title += ' + ' + (users.length-1) + 'others';
+                // Pluralize 'other(s)'
+                if (users.length > 2)
+                    title += 's';
+            }
+
+            // Build the body i.e.:
+            //   Updated defects #1, #32, #90
             if (updatedDefects.length == 1)
                 body = 'Updated defect #';
             else
                 body = 'Updated defects #';
-
             body += updatedDefects.join(', #');
 
-            notification = new Notification('Quality Center', {body: body});
+            // Icon
+            icon = users[0].gravatar+'&s=60'
+
+            console.log('Quality Center', {body: body});
+            notification = new Notification(title, {body: body, icon: icon});
             notification.onclick = function(event) {
                 console.log('got clicked',event);
             };

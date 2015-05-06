@@ -1,16 +1,31 @@
 'use strict';
 
-/* Controllers */
+// Poll interval for fetching QC Audit
+var NOTIFICATIONS_INTERVAL = 2 * 60;
 
+/* Controllers */
 var openQualityControllers = angular.module('openQualityControllers', []);
 
-openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', 'Settings', 'Notifications',
-    function($scope, $routeParams, Users, QCUtils, Settings, Notifications) {
+openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', 'Settings', 'Notifications', '$timeout',
+    function($scope, $routeParams, Users, QCUtils, Settings, Notifications, $timeout) {
         $scope.domain = null;
         $scope.project = $routeParams.project || 'Projects';
         $scope.domains = null;
         $scope.loading = false;
         $scope.user = ALM.getLoggedInUser();
+
+        var alertTimeout = null;
+        $scope.alert = {
+            type: 'alert-info',
+            class: 'fade out',
+            title: 'Alert!',
+            body: 'Theres a problem'
+        };
+
+        $scope.closeAlert = function() {
+            console.log('close alert');
+            $scope.alert.class = 'fade out';
+        };
 
         var loadAllDomains = function() {
             // Get all domains
@@ -35,6 +50,18 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
             });
         }
 
+        $scope.$on('alert', function(event, data) {
+            $scope.alert.title = data.title || '';
+            $scope.alert.body = data.body || '';
+
+            $scope.alert.type = 'alert-' + (data.type || 'info');
+            $scope.alert.class = 'fade in';
+
+            if (alertTimeout)
+                $timeout.cancel(alertTimeout)
+            alertTimeout = $timeout($scope.closeAlert, 5000);
+        });
+
         $scope.$on('loggedIn', function(event, data) {
             if (data) {
                 // Logged in
@@ -56,7 +83,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
                 if ($scope.project != null) {
                     Users.update();
                     QCUtils.update();
-                    Notifications.startNotifier(1 * 60);
+                    Notifications.startNotifier(NOTIFICATIONS_INTERVAL);
                 }
             }
         });
@@ -90,11 +117,12 @@ openQualityControllers.controller('HomeCtrl', ['$scope', '$location',
         );
     }]);
 
-openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
-    function($scope, Users) {
-        $scope.login = function() {
-            var username = $('#username').val(),
-                password = $('#password').val();
+openQualityControllers.controller('LoginCtrl', ['$scope', 'Users', 'Settings',
+    function($scope, Users, Settings) {
+
+        $scope.login = function(u, p) {
+            var username = u || $('#username').val();
+            var password = p || $('#password').val();
 
             ALM.login(username, password,
                 function(data) {
@@ -111,6 +139,11 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users',
                 }
             );
         }
+        
+        if (Settings.settings.username && Settings.settings.password) {
+            console.log('Found an account, will login');
+            $scope.login(Settings.settings.username, Settings.settings.password);
+        }
     }
 ]);
 
@@ -121,7 +154,7 @@ openQualityControllers.controller('SettingsCtrl', ['$scope', 'Settings',
         $scope.saveSettings = function(settings) {
             console.log('saving', settings)
             Settings.save(settings);
-            ALM.setServerAddress(Settings.settings.serverAddress); // TODO move to ALM
+            ALM.setServerAddress(Settings.settings.serverAddress);
         }
     }]);
 
@@ -240,6 +273,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.Users = Users;
         $scope.fields = QCUtils.fields;
         $scope.getFileSizeString = Utils.getFileSizeString;
+        $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
         $scope.isImg = function(filename) {
             var suffix;
@@ -257,10 +291,12 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             ALM.updateStatus($scope.defect, function(err) {
                 if (err) {
                     console.log('cant update status:', err);
+                    $scope.$emit('alert', {type: 'danger', body: 'Unable to change defect status!'});
                     return;
                 }
 
                 console.log('status changed');
+                $scope.$emit('alert', {type: 'success', body: 'Successfully changed defect status!'});
             });
         }
 
@@ -316,9 +352,9 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 html += '</b></span></font></div>';
 
                 // Body
-                html += '<div align="left"><font face="Arial"><span style="font-size:9pt">';
+                //html += '<div align="left"><font face="Arial"><span style="font-size:9pt">';
                 html += $scope.newComment;
-                html += '</span></font></div>';
+                //html += '</span></font></div>';
                 
                 // If first comment, need </html>
                 if (firstComment)
@@ -331,13 +367,15 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                         defect['dev-comments'].substr(pos);
                 }
                 
-                console.log(html);
                 ALM.saveDefect(function() {
+                    $scope.$emit('alert', {type: 'success', body: 'Successfully commented defect!'});
                 }, function() {
+                    $scope.$emit('alert', {type: 'danger', body: 'Can\'t comment the defect!'});
                 }, {id: $scope.defect.id, 'dev-comments': html},
                     $scope.defect);
 
             }, function() {
+                $scope.$emit('alert', {type: 'danger', body: 'Can\'t comment the defect!'});
                 console.log('error');
             }, 'id["'+$scope.defect_id+'"]', ['dev-comments']);
         };

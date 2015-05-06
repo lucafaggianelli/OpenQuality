@@ -160,6 +160,9 @@ ALM.getProjectHistory = function(time, callback) {
     var query = 'query={parent-type[defect];parent-id[*];time[> "'+time+'"]}';
 
     ALM.ajax(path + '?' + query, function(history) {
+        if (history && parseInt(history.TotalResults) == 1) {
+            history.Audit = [history.Audit];
+        }
         callback(null, history);
     }, function() {
         callback('failed to get history');

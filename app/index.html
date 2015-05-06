@@ -30,6 +30,14 @@
 
 <body ng-controller="MainCtrl">
     <div ng-include="'partials/navbar.html'"></div>
+
+    <div class="alerts">
+        <div ng-class="alert.class" class="alert {{alert.type}} alert-dismissible" role="alert">
+            <button type="button" class="close" ng-click="closeAlert()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>{{alert.title}}</strong> {{alert.body}}
+        </div>
+    </div>
+
     <div class="container" ng-view></div>
 
     <div id="loading" class="modal fade">

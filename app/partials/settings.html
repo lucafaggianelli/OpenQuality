@@ -12,16 +12,16 @@
 
     <div class="form-group">
         <label>Account</label>
-        <input type="text" class="form-control" placeholder="username"/>
+        <input ng-model="settings.username" type="text" class="form-control" placeholder="username"/>
     </div>
 
     <div class="form-group">
-        <input type="password" class="form-control" placeholder="password"/>
+        <input ng-model="settings.password" type="password" class="form-control" placeholder="password"/>
     </div>
 
-    <div class="checkbox">
+    <div class="checkbox" ng-show="false">
       <label>
-        <input type="checkbox" value="">
+        <input type="checkbox" ng-model="settings.rememberLogin">
         Remeber login
       </label>
     </div>
