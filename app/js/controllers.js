@@ -56,7 +56,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
                 if ($scope.project != null) {
                     Users.update();
                     QCUtils.update();
-                    Notifications.startNotifier(5 * 60);
+                    Notifications.startNotifier(1 * 60);
                 }
             }
         });

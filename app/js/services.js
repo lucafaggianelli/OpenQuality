@@ -5,8 +5,12 @@
 var openQualityServices = angular.module('openQualityServices', []);
 
 openQualityServices.service('Notifications', function($filter, Users) {
+    // Delay for QC to update history [ms]
+    var QC_AUDIT_DELAY = 20 * 60 * 1000;
+
     var interval = null;
     var lastUpdate = null;
+    var lastAudit = 0;
     var notification = null;
 
     this.startNotifier = function(delaySec) {
@@ -15,8 +19,11 @@ openQualityServices.service('Notifications', function($filter, Users) {
         if (interval)
             clearInterval(interval);
 
-        // Use the saved 'lastupdate' so you don't miss any notification
-        // or fallback to now
+        lastAudit = localStorage.getItem('notif:lastAudit');
+        if (!lastAudit)
+            lastAudit = 0;
+
+        // Use the saved 'lastupdate' time so you don't miss any notification
         var tmp = localStorage.getItem('notif:lastUpdate');
         if (tmp) {
             lastUpdate = new Date(tmp);
@@ -29,7 +36,9 @@ openQualityServices.service('Notifications', function($filter, Users) {
     };
 
     var getNotifications = function() {
-        ALM.getProjectHistory($filter('date')(lastUpdate, 'yyyy-MM-dd HH:mm:ss'), function(err, history) {
+        // Fix issue #50: need to fetch history some minutes before
+        // lastUpdate time as QC updates the history with some delay
+        ALM.getProjectHistory($filter('date')(new Date(lastUpdate.getTime()-QC_AUDIT_DELAY), 'yyyy-MM-dd HH:mm:ss'), function(err, history) {
             if (err) {
                 console.log(err);
                 return;
@@ -40,17 +49,51 @@ openQualityServices.service('Notifications', function($filter, Users) {
             lastUpdate = now;
 
             var audit;
-            var body;
-            var property;
-            var user;
+            var body, title, icon; // notification options
             
             if (parseInt(history.TotalResults) <= 0)
                 return;
 
-            console.log('Changes from '+lastUpdate+' to '+now, history);
+            var updatedDefects = [];
+            for (var i=0; i < history.Audit.length; i++) {
+                audit = history.Audit[i];
+                
+                if (parseInt(audit.Id) > lastAudit) {
+                    console.log('New audit',audit.Id);
+                    lastAudit = parseInt(audit.Id);
+                    //user = Users.getUser(audit.User);
+                } else {
+                    // Already fired a notification for this audit
+                    continue;
+                }
+                
+                // Filter duplicated defects
+                if (updatedDefects.indexOf(audit.ParentId) == -1) {
+                    updatedDefects.push(audit.ParentId);
+                }
+            }
+            localStorage.setItem('notif:lastAudit', lastAudit);
+
+            if (!updatedDefects || updatedDefects.length == 0)
+                return;
+
+            // Build the body as 'Updated defects #1, #32, #90'
+            if (updatedDefects.length == 1)
+                body = 'Updated defect #';
+            else
+                body = 'Updated defects #';
+
+            body += updatedDefects.join(', #');
+
+            notification = new Notification('Quality Center', {body: body});
+            notification.onclick = function(event) {
+                console.log('got clicked',event);
+            };
 
             // TODO bug #45
-            //for (var i=0; i < history.Audit.length; i++) {
+            /*
+            var property;
+            var user;
             if (history.Audit.length > 0) {
                 audit = history.Audit[0]; // TODO i
 
@@ -64,11 +107,7 @@ openQualityServices.service('Notifications', function($filter, Users) {
                 }
 
                 console.log('notify', user.fullname, body, user.gravatar+'&s=60');
-                notification = new Notification(user.fullname, {body: body, icon: user.gravatar+'&s=60'});
-                notification.onclick = function(event) {
-                    console.log('got clicked',event);
-                };
-            }
+            }*/
 
         });
     }
