@@ -107,8 +107,9 @@ openQualityServices.service('Notifications', function($filter, Users) {
             // Icon
             icon = users[0].gravatar+'&s=60'
 
-            console.log('Quality Center', {body: body});
-            notification = new Notification(title, {body: body, icon: icon});
+            console.log({title: title, body: body, icon: icon});
+            // TODO issue #54
+            notification = new Notification(title, {body: body});//, icon: icon});
             notification.onclick = function(event) {
                 console.log('got clicked',event);
             };

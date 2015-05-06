@@ -249,9 +249,9 @@ ALM.getUsers = function getUsers(cb, errCb) {
             };
 
             if (el.email)
-                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/'+md5(el.email.toLowerCase())+'.jpg?d=identicon';
+                users[el.Name].gravatar = 'https://www.gravatar.com/avatar/'+md5(el.email.toLowerCase())+'.jpg?d=identicon';
             else
-                users[el.Name].gravatar = 'http://www.gravatar.com/avatar/0000.jpg?f=y';
+                users[el.Name].gravatar = 'https://www.gravatar.com/avatar/0000.jpg?f=y';
         }
 
         cb(users);
