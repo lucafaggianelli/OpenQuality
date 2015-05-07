@@ -23,3 +23,8 @@ body {
     border-top-right-radius:0;
     border-top:none;
 }
+
+.defect-list-owner .media-object img {
+    height:32px;
+    width:32px;
+}

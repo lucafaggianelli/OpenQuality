@@ -191,7 +191,6 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.project = $routeParams.project;
         $scope.pageSize = 50;
         $scope.currentPage = 1;
-        //ALM.setCurrentProject($scope.domain, $scope.project);
 
         $scope.$emit('projectChanged', [$scope.domain,$scope.project]);
         $scope.Users = Users;
@@ -203,21 +202,50 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                     "description",
                     "dev-comments",
                     "attachment",
-                    "detected-by",
-                    //"detection-version",
-                    //"detected-in-rel",
-                    "creation-time",
+                    "last-modified",
                     "owner", "status", "severity"];
 
-        $scope.preset = JSON.parse(localStorage.getItem('defectsFilter'));
+        $scope.searchFilters = JSON.parse(localStorage.getItem('defectsFilter'));
+
+        $scope.sortFilters = {
+            param: 'id',
+            predicate: '"id"',
+            reverse: true,
+        };
+
+        $scope.sortButtons = {
+            'id': {btn:'btn-success',icon:'glyphicon-sort-by-attributes-alt'},
+            'last-modified': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
+            'severity': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
+        };
+
+        $scope.sort = function(param) {
+            // If press again the sort button, reverse the order
+            if ($scope.sortFilters.param == param) {
+                $scope.sortFilters.reverse = !$scope.sortFilters.reverse;
+            } else {
+                $scope.sortFilters.param = param;
+                $scope.sortFilters.predicate = '"'+param+'"';
+            }
+
+            angular.forEach($scope.sortButtons, function(value, key) {
+                if (key == $scope.sortFilters.param) {
+                    $scope.sortButtons[key].btn = 'btn-success';
+                    $scope.sortButtons[key].icon = $scope.sortFilters.reverse ? 
+                        'glyphicon-sort-by-attributes-alt':'glyphicon-sort-by-attributes';
+                } else {
+                    $scope.sortButtons[key].btn = 'btn-default';
+                }
+            });
+        };
 
         $scope.getDefects = function() {
             var queryString = '';
 
-            if ($scope.preset.query) {
+            if ($scope.searchFilters.query) {
                 var values, query;
-                for (var param in $scope.preset.query) {
-                    values = $scope.preset.query[param];
+                for (var param in $scope.searchFilters.query) {
+                    values = $scope.searchFilters.query[param];
                     // Literals must be quoted to avoid white space issues
                     values = values.map(function(x){return '"'+x+'"';});
                     queryString += param + '[' + values.join(' OR ') + '];';
@@ -251,16 +279,23 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             $scope.getDefects();
         };
 
-        $scope.updatePreset = function(preset, save) {
-            $scope.preset = preset;
+        $scope.updatePreset = function(filters, save) {
+            $scope.searchFilters = filters;
             if (save)
-                localStorage.setItem('defectsFilter', JSON.stringify(preset));
+                localStorage.setItem('defectsFilter', JSON.stringify(searchFilters));
 
             $scope.getDefects();
         };
 
         $scope.showDefect = function(id) {
             location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+id;
+        }
+
+        window.onscroll = function() {
+            var doc = document.documentElement;
+            var left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+            var top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+            console.log(left, top);
         }
 
         // Main
@@ -509,9 +544,12 @@ var SEVERITY_ICONS = [
 ];
 
 var STATUS_CLASSES = {
-    Closed: 'danger',
-    Fixed: 'danger',
-    Rejected: 'danger',
+    New: 'text-info',
+    Open: 'text-success',
+    Closed: 'text-danger',
+    Fixed: 'text-danger',
+    Rejected: 'text-warning',
+    Reopen: 'text-warning',
 }
 
 //var DESCRIPTION_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">';

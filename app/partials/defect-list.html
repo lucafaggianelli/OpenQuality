@@ -29,6 +29,21 @@
                             ng-options="status for status in statuses">
                     </select>
                 </div>
+
+                <div class="col-sm-4 form-group">
+                    <label for="status">Sort</label>
+                    <p><button type="button" class="btn" ng-class="sortButtons.id.btn" ng-click="sort('id')">
+                        <span class="glyphicon" ng-class="sortButtons.id.icon" aria-hidden="true"></span> Id</button></p>
+
+                    <p><button type="button" class="btn" ng-class="sortButtons['last-modified'].btn" ng-click="sort('last-modified')">
+                        <span class="glyphicon" ng-class="sortButtons['last-modified'].icon" aria-hidden="true"></span> Last Modified</button></p>
+
+                    <p><button type="button" class="btn" ng-class="sortButtons.severity.btn" ng-click="sort('severity')">
+                        <span class="glyphicon" ng-class="sortButtons.severity.icon" aria-hidden="true"></span> Severity</button></p>
+
+                    <p ng-show="false"><button type="button" class="btn" ng-class="sortButtons.priority.btn" ng-click="sort('priority')">
+                        <span class="glyphicon" ng-class="sortButtons.priority.icon" aria-hidden="true"></span> Priority</button></p>
+                </div>
             </div>
 
             <div class="row">
@@ -48,7 +63,7 @@
 {{totalCount}} defects queried. {{(defects| filter:searchText).length}} displayed.
 </div>
 
-<table ng-show="defects" data-provides="rowlink" class="table table-hover">
+<table id="defect-list" ng-show="defects" data-provides="rowlink" class="table table-hover">
     <thead>
         <tr>
             <th>#</th>
@@ -56,7 +71,6 @@
             <th>Status</th>
             <th>Severity</th>
             <th>Assigned To</th>
-            <th>Detected By</th>
             <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
             <th><span class="glyphicon glyphicon-comment" aria-hidden="true"></span></th>
             <th><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span></th>
@@ -64,19 +78,27 @@
     </thead>
 
     <tbody>
-        <tr ng-repeat="defect in defects| filter:searchText" ng-click="showDefect(defect.id)" ng-class="defect.statusClass">
+        <tr ng-repeat="defect in defects | filter: searchText | orderBy:sortFilters.predicate:sortFilters.reverse" ng-click="showDefect(defect.id)">
             <td>{{defect.id}}</td>
             <td>
                 <p><b>{{defect.name}}</b></p>
                 <p>{{defect.description | html2text | limitTo: 100}}<span class="info">&hellip;</span></p>
             </td>
-            <td>{{defect.status}}</td>
+            <td ng-class="defect.statusClass">{{defect.status}}</td>
             <td>{{defect.severity}}</td>
-            <td>{{Users.getName(defect.owner)}}</td>
-            <td>{{Users.getName(defect['detected-by'])}}</td>
+            <td class="defect-list-owner">
+                <div class="media">
+                  <div class="media-left media-middle">
+                      <img class="media-object" ng-src="{{Users.getUser(defect.owner).gravatar}}&s=32">
+                  </div>
+                  <div class="media-body">
+                      <h4 class="media-heading">{{Users.getName(defect.owner)}}</h4>
+                  </div>
+                </div>
+            </td>
             <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
             <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>
-            <td>{{defect['creation-time']}}</td>
+            <td>{{defect['last-modified']}}</td>
         </tr>
     </tbody>
 </table>
