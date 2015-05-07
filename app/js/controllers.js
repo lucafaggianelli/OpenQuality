@@ -25,7 +25,20 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
 
         $scope.closeAlert = function() {
             $scope.alert.class = 'fade out';
+            $scope.alert.show = false;
+        };
+        $scope.showAlert = function(event, data) {
+            $scope.alert.title = data.title || '';
+            $scope.alert.body = data.body || '';
+
+            $scope.alert.type = 'alert-' + (data.type || 'info');
+            $scope.alert.class = 'fade in';
             $scope.alert.show = true;
+            $scope.$apply();
+
+            if (alertTimeout)
+                $timeout.cancel(alertTimeout)
+            alertTimeout = $timeout($scope.closeAlert, 5000);
         };
 
         var loadAllDomains = function() {
@@ -51,18 +64,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
             });
         }
 
-        $scope.$on('alert', function(event, data) {
-            $scope.alert.title = data.title || '';
-            $scope.alert.body = data.body || '';
-
-            $scope.alert.type = 'alert-' + (data.type || 'info');
-            $scope.alert.class = 'fade in';
-            $scope.alert.show = true;
-
-            if (alertTimeout)
-                $timeout.cancel(alertTimeout)
-            alertTimeout = $timeout($scope.closeAlert, 5000);
-        });
+        $scope.$on('alert', $scope.showAlert);
 
         $scope.$on('loggedIn', function(event, data) {
             if (data) {

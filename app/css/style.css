@@ -3,7 +3,7 @@ body {
 }
 
 .alerts {
-    position: absolute;
+    position: fixed;
     width: 100%;
     z-index: 999;
     opacity: .85;
