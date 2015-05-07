@@ -367,12 +367,14 @@ ALM.saveDefect = function saveDefect(cb, errCb, defect, lastSavedDefect) {
   start();
 }
 
-ALM.updateStatus = function(defect, callback) {
+ALM.updateField = function(defect, field, callback) {
     var path = "rest/domains/" + DOMAIN +
             "/projects/" + PROJECT +
             "/defects/" + defect.id;
 
-    var xml = convertFieldsBack({status: defect.status}, 'defect');
+    var fields = {};
+    fields[field] = defect[field];
+    var xml = convertFieldsBack(fields, 'defect');
 
     ALM.ajax(path, function onSuccess() {
             callback(null);

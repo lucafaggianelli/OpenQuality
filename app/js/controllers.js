@@ -16,6 +16,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
 
         var alertTimeout = null;
         $scope.alert = {
+            show: false,
             type: 'alert-info',
             class: 'fade out',
             title: 'Alert!',
@@ -23,8 +24,8 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
         };
 
         $scope.closeAlert = function() {
-            console.log('close alert');
             $scope.alert.class = 'fade out';
+            $scope.alert.show = true;
         };
 
         var loadAllDomains = function() {
@@ -56,6 +57,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
 
             $scope.alert.type = 'alert-' + (data.type || 'info');
             $scope.alert.class = 'fade in';
+            $scope.alert.show = true;
 
             if (alertTimeout)
                 $timeout.cancel(alertTimeout)
@@ -247,9 +249,11 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             $scope.getDefects();
         };
 
-        $scope.updatePreset = function(preset) {
+        $scope.updatePreset = function(preset, save) {
             $scope.preset = preset;
-            localStorage.setItem('defectsFilter', JSON.stringify(preset));
+            if (save)
+                localStorage.setItem('defectsFilter', JSON.stringify(preset));
+
             $scope.getDefects();
         };
 
@@ -286,17 +290,17 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             return false;
         };
 
-        $scope.setStatus = function() {
-            console.log('status changed to', $scope.defect.status);
-            ALM.updateStatus($scope.defect, function(err) {
+        $scope.updateField = function(field) {
+            console.log('Changing '+field+' to', $scope.defect[field]);
+            ALM.updateField($scope.defect, field, function(err) {
                 if (err) {
-                    console.log('cant update status:', err);
-                    $scope.$emit('alert', {type: 'danger', body: 'Unable to change defect status!'});
+                    console.log('cant update field:', err);
+                    $scope.$emit('alert', {type: 'danger', body: 'Unable to change defect field "'+field+'"!'});
                     return;
                 }
 
-                console.log('status changed');
-                $scope.$emit('alert', {type: 'success', body: 'Successfully changed defect status!'});
+                console.log('field changed');
+                $scope.$emit('alert', {type: 'success', body: 'Successfully changed defect field"'+field+'"!'});
             });
         }
 

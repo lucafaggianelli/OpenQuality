@@ -9,3 +9,17 @@ body {
     opacity: .85;
     padding: 0 10%;
 }
+
+#quick-search.open {
+    border-bottom-left-radius:0;
+}
+
+#button-advanced-search.open {
+    border-bottom-right-radius:0;
+}
+
+#advanced-search-container.open {
+    border-top-left-radius:0;
+    border-top-right-radius:0;
+    border-top:none;
+}

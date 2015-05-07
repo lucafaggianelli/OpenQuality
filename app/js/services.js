@@ -144,16 +144,19 @@ openQualityServices.service('Notifications', function($filter, Users) {
 openQualityServices.service('Users', function() {
     var that = this;
     this.users = {};
+    this.usersArr = [];
 
     this.update = function(callback) {
         var cache = sessionStorage.getItem('users.'+ALM.getCurrentProject());
         if (cache) {
             this.users = JSON.parse(cache);
+            this.usersArr = Utils.obj2arr(this.users);
             return;
         }
 
         ALM.getUsers(function(users) {
             that.users = users;
+            that.usersArr = Utils.obj2arr(that.users);
             sessionStorage.setItem('users.'+ALM.getCurrentProject(), JSON.stringify(users));
             console.log('Users list updated');
         }, function() {});

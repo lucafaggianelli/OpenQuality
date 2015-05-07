@@ -33,7 +33,7 @@
                       <img class="media-object" ng-src="{{user.gravatar}}&s=32">
                   </div>
                   <div class="media-body">
-                    <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id">Media heading</h4>
+                    <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id"></h4>
                     <small>{{user.email}}</small>
                   </div>
                 </div>

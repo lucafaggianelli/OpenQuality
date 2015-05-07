@@ -2,7 +2,6 @@
     <h1><span class="text-primary">#{{defect.id}}</span> {{defect.name}} <span class="label label-primary">{{defect.status}}</span></h1>
 </div>
 
-<form id="defect-detail">
     <div ta-bind ng-model="defect.description"></div>
 
     <div class="panel panel-default">
@@ -17,33 +16,43 @@
             
             <p>Severity <span class="glyphicon glyphicon-{{defect.severityIcon}}" aria-hidden="true"></span> <b>{{defect.severity}}</b></p>
 
-            <p>Status <select
-                name="status" class="btn btn-default" ng-model="defect.status"
-                ng-options="status for status in fields.status.Values" ng-change="setStatus()"></select>
-            </p>
+            <form class="form-inline" id="defect-status">
+                <div class="form-group">
+                    <label for="status" class="control-label">Status</label>
+                    <select name="status" class="form-control" ng-model="defect.status"
+                        ng-options="status for status in fields.status.Values" ng-change="updateField('status')"></select>
+                </div>
+                    
+                <div class="form-group" ng-show="defect.status == 'Fixed'">
+                    <label for="user-09" class="control-label">Fixed in build</label>
+                    <select name="user-09" class="form-control" ng-model="defect['user-09']"
+                        ng-options="val for val in fields['user-09'].Values" ng-change="updateField('user-09')"></select>
+                </div>
+            </form>
 
-            <p ng-show="defect.status == 'Fixed'">Fixed in build <b>{{defect['user-09']}}</b></p>
-            
-            <p>Assigned to <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <b>{{Users.getName(defect['owner'])}}</b></p>
-            <!--<p>Assigned to <select ng-model="defect.owner" ng-options="user.id as user.fullname for (k, user) in Users.users">-->
-        </select></p>
+            <form>
+                <div class="form-group">
+                    <label class="control-label">Assigned to</label>
+
+                    <ui-select class="" ng-model="defect.owner" ng-disabled="disabled"
+                            reset-search-input="false" on-select="updateField('owner')">
+                        <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
+                        <ui-select-choices repeat="user.id as user in Users.usersArr | filter: $select.search">
+                            <div class="media">
+                              <div class="media-left">
+                                  <img class="media-object" ng-src="{{user.gravatar}}&s=32">
+                              </div>
+                              <div class="media-body">
+                                <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id"></h4>
+                                <small>{{user.email}}</small>
+                              </div>
+                            </div>
+                        </ui-select-choices>
+                    </ui-select>
+                </div>
+            </form>
         </div>
     </div>
-
-    <div class="form-group">
-        <!--
-        <ui-select ng-model="defect.owner"
-                theme="bootstrap"
-                ng-disabled="disabled"
-                reset-search-input="false"
-                style="width: 300px;">
-            <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
-            <ui-select-choices repeat="user in Users.users | filter: $select.search">
-                <div ng-bind-html="user.fullname | highlight: $select.search"></div>
-            </ui-select-choices>
-        </ui-select>-->
-    </div>
-
 
     <!-- Comments -->
     <div class="panel panel-default">
@@ -68,7 +77,6 @@
           </div>
           <div class="modal-body">
             <div text-angular ta-toolbar="{{toolbar}}" ng-model="newComment"></div>
-            <!--<textarea class="form-control" rows="3" ng-model="newComment"></textarea>-->
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -115,4 +123,3 @@
     </div><!-- /.modal -->
 
     <div class="alert alert-danger" ng-show="errorMessage">{{errorMessage}}</div>
-</form>

@@ -1,34 +1,47 @@
 <h1><a href="javascript:void(0)" ng-click="editPreset()">{{preset.header}}</a></h1>
 
-<form class="form" role="form" ng-show="showAdv">
-    <div class="form-group">
-        <input class="form-control" ng-model="preset.header" placeholder="Search..."/>
-    </div>
-
-    <label for="severity">Severity</label><br/>
-    <select name="severity" class="form-control" multiple ng-model="preset.query.severity"
-            ng-options="severity for severity in severities">
-    </select><br/>
-
-    <label for="status">Status</label>
-    <select name="status" class="form-control" multiple ng-model="preset.query.status"
-            ng-options="status for status in statuses">
-    </select><br/>
-
-    <div class="form-group">
-        <label for="query">Query Debug</label>
-        <input disabled class="form-control" value="{{preset.query}}"/>
-    </div>
-
-    <button class="btn btn-primary" ng-click="updatePreset(preset)">Save</button>
-    <button class="btn btn-default" ng-click="editPreset()">Reset</button>
-</form>
-
 <div ng-show="defects" class="input-group">
-    <input ng-model="searchText" placeholder="Quick filter..." class="form-control"/ >
+    <input id="quick-search" ng-model="searchText" placeholder="Quick filter..." 
+        ng-class="{'open':showAdv}" class="form-control" tabindex="1"/>
     <span class="input-group-btn">
-        <button class="btn btn-default" type="button" ng-click="showAdv = !showAdv">Advanced</button>
+        <button id="button-advanced-search" class="btn btn-default" ng-class="{'open':showAdv}" type="button" ng-click="showAdv = !showAdv">Advanced <span class="caret"></span></button>
     </span>
+</div>
+
+<div id="advanced-search-container" class="panel panel-default" ng-show="showAdv" ng-class="{'open':showAdv}">
+    <div class="panel-body">
+        <form class="form" role="form">
+            <div class="form-group">
+                <input class="form-control" ng-model="preset.header" placeholder="Search..."/>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4 form-group">
+                    <label for="severity">Severity</label><br/>
+                    <select name="severity" class="form-control" multiple ng-model="preset.query.severity"
+                            ng-options="severity for severity in severities">
+                    </select>
+                </div>
+
+                <div class="col-sm-4 form-group">
+                    <label for="status">Status</label>
+                    <select name="status" class="form-control" multiple ng-model="preset.query.status"
+                            ng-options="status for status in statuses">
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 form-group">
+                    <button class="btn btn-primary" ng-click="updatePreset(preset)">
+                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search</button>
+                    <button class="btn btn-success" ng-click="updatePreset(preset, true)">
+                        <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+                    <button class="btn btn-default" ng-click="editPreset()">Reset</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div ng-show="!loading">
