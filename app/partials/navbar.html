@@ -20,7 +20,7 @@
               >{{project}} <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
             <li role="presentation" class="dropdown-header" ng-repeat-start="(dom, prjs) in domains">{{dom}}</li>
-            <li role="presentation" ng-repeat="prj in prjs"><a role="menuitem" ng-href="#/{{dom}}/projects/{{prj}}/">{{prj}}</a></li>
+            <li role="presentation" ng-repeat="prj in prjs"><a role="menuitem" ng-href="#/{{dom}}/projects/{{prj}}/defects">{{prj}}</a></li>
             <li ng-if="!$last" role="presentation" class="divider" ng-repeat-end></li>
           </ul>
         </li>

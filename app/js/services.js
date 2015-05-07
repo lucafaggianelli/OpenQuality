@@ -186,9 +186,17 @@ openQualityServices.service('Users', function() {
 openQualityServices.service('Settings', function() {
     this.settings = JSON.parse(localStorage.getItem('settings')) || {};
     
+    this.setAccount = function(u,p) {
+        this.settings.username = u;
+        this.settings.password = p;
+        this.save();
+    };
+
     this.save = function(settings) {
-        this.settings = settings;
-        localStorage.setItem('settings', JSON.stringify(settings));
+        if (settings)
+            this.settings = settings;
+
+        localStorage.setItem('settings', JSON.stringify(this.settings));
     }
 });
 

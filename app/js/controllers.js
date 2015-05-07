@@ -125,20 +125,24 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Users', 'Settings',
     function($scope, Users, Settings) {
 
         $scope.login = function(u, p) {
-            var username = u || $('#username').val();
-            var password = p || $('#password').val();
+            var username = u || $scope.username;
+            var password = p || $scope.password;
+            var remember = $scope.remember;
 
             ALM.login(username, password,
                 function(data) {
-                    console.log('logged in as',username);
+                    $scope.$emit('alert', {type:'success',body:'Logged in as '+username});
+                    if (remember) {
+                        Settings.setAccount(username, password);
+                    }
+
                     sessionStorage.setItem('currentUser', username);
                     $scope.$emit('loggedIn', username);
                     location.hash = sessionStorage.getItem('redirectAfterLogin') || '/';
                     sessionStorage.removeItem('redirectAfterLogin');
-                    console.log('redirecting to', location.hash);
                 },
                 function(data) {
-                    console.log('logged out', data);
+                    $scope.$emit('alert', {type:'danger',body:'Can\'t login'});
                     $scope.$emit('loggedIn', null);
                 }
             );
