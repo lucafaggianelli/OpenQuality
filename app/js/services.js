@@ -149,8 +149,9 @@ openQualityServices.service('Users', function() {
     this.update = function(callback) {
         var cache = sessionStorage.getItem('users.'+ALM.getCurrentProject());
         if (cache) {
-            this.users = JSON.parse(cache);
-            this.usersArr = Utils.obj2arr(this.users);
+            that.users = JSON.parse(cache);
+            that.usersArr = Utils.obj2arr(that.users);
+            callback(null);
             return;
         }
 
@@ -159,7 +160,10 @@ openQualityServices.service('Users', function() {
             that.usersArr = Utils.obj2arr(that.users);
             sessionStorage.setItem('users.'+ALM.getCurrentProject(), JSON.stringify(users));
             console.log('Users list updated');
-        }, function() {});
+            callback(null);
+        }, function() {
+            callback('Cant fetch users list');
+        });
     }
 
     this.getUser = function(name) {
@@ -204,10 +208,11 @@ openQualityServices.service('QCUtils', function() {
     var that = this;
     this.fields = {};
 
-    this.update = function() {
+    this.update = function(callback) {
         var cache = sessionStorage.getItem('fields.'+ALM.getCurrentProject());
         if (cache) {
-            this.fields = JSON.parse(cache);
+            that.fields = JSON.parse(cache);
+            callback(null);
             return;
         }
 
@@ -217,7 +222,7 @@ openQualityServices.service('QCUtils', function() {
                 for (var i in json.Field) {
                     that.fields[json.Field[i].Name] = json.Field[i];
                 }
-                
+
                 ALM.getProperties('customization/entities/defect/lists',
                     function(json) {
                         var tmp;
@@ -248,12 +253,15 @@ openQualityServices.service('QCUtils', function() {
 
                         sessionStorage.setItem('fields.'+ALM.getCurrentProject(), JSON.stringify(that.fields));
                         console.log('Updated fields for project '+ ALM.getCurrentProject());
+                        callback(null);
                     }, function() {
                         console.log('Fail');
+                        callback('Cant fetch fields');
                     });
 
             }, function() {
                 console.log('Fail');
+                callback('Cant fetch fields');
             });
     }
 });

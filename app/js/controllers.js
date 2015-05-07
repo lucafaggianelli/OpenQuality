@@ -6,13 +6,14 @@ var NOTIFICATIONS_INTERVAL = 2 * 60;
 /* Controllers */
 var openQualityControllers = angular.module('openQualityControllers', []);
 
-openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', 'Settings', 'Notifications', '$timeout',
-    function($scope, $routeParams, Users, QCUtils, Settings, Notifications, $timeout) {
+openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', 'Settings', 'Notifications', '$timeout', '$rootScope',
+    function($scope, $routeParams, Users, QCUtils, Settings, Notifications, $timeout, $rootScope) {
         $scope.domain = null;
         $scope.project = $routeParams.project || 'Projects';
         $scope.domains = null;
         $scope.loading = false;
         $scope.user = ALM.getLoggedInUser();
+        $scope.loadingModal = angular.element('#loading');
 
         var alertTimeout = null;
         $scope.alert = {
@@ -27,6 +28,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
             $scope.alert.class = 'fade out';
             $scope.alert.show = false;
         };
+
         $scope.showAlert = function(event, data) {
             $scope.alert.title = data.title || '';
             $scope.alert.body = data.body || '';
@@ -64,6 +66,39 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
             });
         }
 
+        var updateProject = function(domain, project, callback) {
+            if (domain != $scope.domain || project != $scope.project) {
+                console.log('Project changed to '+domain+':'+project);
+                $scope.domain = domain;
+                $scope.project = project;
+                ALM.setCurrentProject($scope.domain, $scope.project);
+                if ($scope.domain != null && $scope.project != null) {
+                    async.series([
+                        Users.update,
+                        QCUtils.update,
+                        function(cb) {
+                            Notifications.startNotifier(NOTIFICATIONS_INTERVAL);
+                            cb(null);
+                        }
+                    ], function(err) {
+                        callback(err);
+                    });
+                } else {
+                    callback();
+                }
+            } else {
+                callback();
+            }
+        }
+
+        $scope.$on('$routeChangeSuccess', function(event, route) { 
+            $scope.loadingModal.modal('show');
+            updateProject(route.params.domain, route.params.project, function(err) {
+                $rootScope.$broadcast('ready', route.params);
+                $scope.loadingModal.modal('hide');
+            });
+        });
+
         $scope.$on('alert', $scope.showAlert);
 
         $scope.$on('loggedIn', function(event, data) {
@@ -78,18 +113,9 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
             $scope.$apply();
         });
 
-        $scope.$on('projectChanged', function(event, data) {
-            if (data[0] != $scope.domain && data[1] != $scope.project) {
-                console.log('Project changed to', data);
-                $scope.domain = data[0];
-                $scope.project = data[1];
-                ALM.setCurrentProject($scope.domain, $scope.project);
-                if ($scope.project != null) {
-                    Users.update();
-                    QCUtils.update();
-                    Notifications.startNotifier(NOTIFICATIONS_INTERVAL);
-                }
-            }
+        // TODO deprecated
+        $scope.$on('projectChanged', function(data) {
+            updateProject(data[0], data[1], function(){});
         });
 
         // If no server set, go to settings
@@ -101,7 +127,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'Users'
 
         console.log('server is ' + Settings.settings.serverAddress);
         ALM.setServerAddress(Settings.settings.serverAddress);
-        
+
         ALM.tryLogin(
             function(username) {
                 $scope.user = username;
@@ -168,6 +194,7 @@ openQualityControllers.controller('SettingsCtrl', ['$scope', 'Settings',
 
 openQualityControllers.controller('ProjectListCtrl', ['$scope',
     function($scope) {
+        console.error('ProjectListCtrl deprecated');
         $scope.domain = ALM.getCurrentDomain();
 
         ALM.getProjects($scope.domain,
@@ -182,11 +209,11 @@ openQualityControllers.controller('ProjectListCtrl', ['$scope',
 
 openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', 'Users',
     function($scope, $routeParams, Users) {
+        console.warn('ProjectDetailCtrl implement me as dashboard');
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
-        //ALM.setCurrentProject($scope.domain, $scope.project);
 
-        $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
+        //$scope.$emit('projectChanged', [$scope.domain, $scope.project]);
     }]);
 
 openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils',
@@ -196,11 +223,14 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.pageSize = 50;
         $scope.currentPage = 1;
 
-        $scope.$emit('projectChanged', [$scope.domain,$scope.project]);
-        $scope.Users = Users;
-
-        $scope.statuses = QCUtils.fields.status.Values;
-        $scope.severities = QCUtils.fields.severity.Values;
+        $scope.$on('ready', function(route) {
+            console.log('ready received');
+            $scope.Users = Users;
+            $scope.statuses = QCUtils.fields.status.Values;
+            $scope.severities = QCUtils.fields.severity.Values;
+            
+            $scope.getDefects();
+        });
 
         var fields = ["id","name",
                     "description",
@@ -268,6 +298,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                         }
                     }
 
+                    console.log('got defects')
                     $scope.$apply();
                 },
                 function onError() {
@@ -299,11 +330,9 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             var doc = document.documentElement;
             var left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
             var top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
-            console.log(left, top);
+            //console.log(left, top);
         }
 
-        // Main
-        $scope.getDefects();
     }]);
 
 openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'Users', 'QCUtils', '$filter',
@@ -313,7 +342,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
 
-        $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
+        //$scope.$emit('projectChanged', [$scope.domain, $scope.project]);
 
         $scope.Users = Users;
         $scope.fields = QCUtils.fields;
@@ -494,7 +523,7 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'U
     function($scope, $routeParams, Users, QCUtils, $filter) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
-        $scope.$emit('projectChanged', [$scope.domain, $scope.project]);
+        //$scope.$emit('projectChanged', [$scope.domain, $scope.project]);
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
         $scope.newDefect = true;
