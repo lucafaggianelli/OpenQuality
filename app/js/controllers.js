@@ -1,5 +1,8 @@
 'use strict';
 
+// App version
+var VERSION = '0.1.1-dev';
+
 // Poll interval for fetching QC Audit
 var NOTIFICATIONS_INTERVAL = 2 * 60;
 
@@ -165,6 +168,8 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Settings',
 
 openQualityControllers.controller('SettingsCtrl', ['$scope', 'Settings',
     function($scope, Settings) {
+        $scope.version = VERSION;
+
         $scope.settings = Settings.settings;
 
         $scope.saveSettings = function(settings) {
@@ -320,8 +325,6 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
 
-        $scope.Users = ALMx;
-        $scope.fields = ALMx.fields;
         $scope.getFileSizeString = Utils.getFileSizeString;
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
@@ -374,13 +377,18 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
         $scope.addComment = function() {
             ALM.getDefects(function(defect, count) {
-                if (count == 1)
+                if (count == 1) {
                     defect = defect[0];
-                else {
+                } else {
                     console.log('expected 1 defect, got '+count);
                     return;
                 }
 
+                var newComment = {
+                    user: ALMx.getUser(ALM.getLoggedInUser()).fullname,
+                    date: $filter('date')(new Date(),'yyyy/MM/dd HH:mm:ss')+':',
+                    content: $scope.newComment.replace(/<[^>]+>/gm, '')
+                };
                 var html = '';
                 var firstComment = !defect['dev-comments'];
 
@@ -396,16 +404,16 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
                 // Header
                 html += '<font face="Arial" color="#000080" size="1"><span style="font-size:8pt"><b>';
-                html += ALMx.getName(ALM.getLoggedInUser());
+                html += newComment.user;
                 html += ' &lt;'+ALM.getLoggedInUser()+'&gt;, ';
-                html += $filter('date')(new Date(),'yyyy/MM/dd HH:mm:ss')+':';
+                html += newComment.date;
                 html += '</b></span></font></div>';
 
                 // Body
                 //html += '<div align="left"><font face="Arial"><span style="font-size:9pt">';
                 html += $scope.newComment;
                 //html += '</span></font></div>';
-                
+
                 // If first comment, need </html>
                 if (firstComment)
                     html += COMMENT_HTML_END;
@@ -416,14 +424,15 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     var html = defect['dev-comments'].substr(0, pos) + html + 
                         defect['dev-comments'].substr(pos);
                 }
-                
-                ALM.saveDefect(function() {
-                    $scope.$emit('alert', {type: 'success', body: 'Successfully commented defect!'});
-                }, function() {
-                    $scope.$emit('alert', {type: 'danger', body: 'Can\'t comment the defect!'});
-                }, {id: $scope.defect.id, 'dev-comments': html},
-                    $scope.defect);
 
+                ALM.saveDefect(function() {
+                        $scope.$emit('alert', {type: 'success', body: 'Successfully commented defect!'});
+                        $scope.defect.comments.unshift(newComment);
+                        $scope.$apply();
+                    }, function() {
+                        $scope.$emit('alert', {type: 'danger', body: 'Can\'t comment the defect!'});
+                    }, {id: $scope.defect.id, 'dev-comments': html},
+                    $scope.defect);
             }, function() {
                 $scope.$emit('alert', {type: 'danger', body: 'Can\'t comment the defect!'});
                 console.log('error');
@@ -442,8 +451,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     "user-03", // Discipline
             ];
 
-        ALM.getDefects(
-            function onSuccess(defects, totalCount) {
+        $scope.getDefect = function() {
+            ALM.getDefects(function(defects, totalCount) {
                 if (totalCount == 1) {
                     originalDefect = defects[0];
                     $scope.defect = defects[0];
@@ -493,6 +502,15 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             function onError() {
             },
             queryString, fields);
+        }
+
+        ALMx.update($scope.domain, $scope.project, function() {
+            console.log('project update is ready');
+            $scope.Users = ALMx;
+            $scope.fields = ALMx.fields;
+
+            $scope.getDefect();
+        });
     }]);
 
 openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'ALMx', '$filter',

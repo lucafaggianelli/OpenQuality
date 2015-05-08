@@ -28,3 +28,7 @@ body {
     height:32px;
     width:32px;
 }
+
+.defect-detail-description {
+    margin:0 10px 15px 10px;
+}
