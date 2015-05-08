@@ -4,9 +4,12 @@
 
 var openQualityServices = angular.module('openQualityServices', []);
 
-openQualityServices.service('Notifications', function($filter, Users) {
+openQualityServices.service('Notifications', function($filter, ALMx) {
     // Delay for QC to update history [ms]
     var QC_AUDIT_DELAY = 20 * 60 * 1000;
+
+    // Poll interval for fetching QC Audit
+    var NOTIFICATIONS_INTERVAL = 2 * 60;
 
     var interval = null;
     var lastUpdate = null;
@@ -14,6 +17,10 @@ openQualityServices.service('Notifications', function($filter, Users) {
     var notification = null;
 
     this.startNotifier = function(delaySec) {
+        if (!delaySec || delaySec <= 10) {
+            console.warn('Notifier minimum delay is 10s. You cant set it to '+delaySec+'s');
+            delaySec = NOTIFICATIONS_INTERVAL;
+        }
         console.log('Starting notification daemon with delay of '+delaySec+'s');
 
         if (interval)
@@ -72,7 +79,7 @@ openQualityServices.service('Notifications', function($filter, Users) {
 
                 if (usersIds.indexOf(audit.User) == -1) {
                     usersIds.push(audit.User);
-                    users.push(Users.getUser(audit.User));
+                    users.push(ALMx.getUser(audit.User));
                 }
                 
                 // Filter duplicated defects
@@ -141,12 +148,56 @@ openQualityServices.service('Notifications', function($filter, Users) {
     }
 });
 
-openQualityServices.service('Users', function() {
+openQualityServices.service('Settings', function() {
+    this.settings = JSON.parse(localStorage.getItem('settings')) || {};
+    
+    this.setAccount = function(u,p) {
+        this.settings.username = u;
+        this.settings.password = p;
+        this.save();
+    };
+
+    this.save = function(settings) {
+        if (settings)
+            this.settings = settings;
+
+        localStorage.setItem('settings', JSON.stringify(this.settings));
+    }
+});
+
+openQualityServices.service('ALMx', function($rootScope) {
     var that = this;
+
+    this.domain = null;
+    this.project = null;
+    
+    this.fields = {};
     this.users = {};
     this.usersArr = [];
 
-    this.update = function(callback) {
+    this.update = function(domain, project, callback) {
+        if (domain != this.domain || project != this.project) {
+            console.log('Project changed to '+domain+':'+project);
+            this.domain = domain;
+            this.project = project;
+            ALM.setCurrentProject(this.domain, this.project);
+
+            if (this.domain != null && this.project != null) {
+                async.series([
+                    this.updateUsers,
+                    this.updateFields
+                ], function(err) {
+                    callback(err);
+                });
+            } else {
+                callback();
+            }
+        } else {
+            callback();
+        }
+    }
+
+    this.updateUsers = function(callback) {
         var cache = sessionStorage.getItem('users.'+ALM.getCurrentProject());
         if (cache) {
             that.users = JSON.parse(cache);
@@ -185,30 +236,8 @@ openQualityServices.service('Users', function() {
             return name;
         }
     };
-});
-
-openQualityServices.service('Settings', function() {
-    this.settings = JSON.parse(localStorage.getItem('settings')) || {};
     
-    this.setAccount = function(u,p) {
-        this.settings.username = u;
-        this.settings.password = p;
-        this.save();
-    };
-
-    this.save = function(settings) {
-        if (settings)
-            this.settings = settings;
-
-        localStorage.setItem('settings', JSON.stringify(this.settings));
-    }
-});
-
-openQualityServices.service('QCUtils', function() {
-    var that = this;
-    this.fields = {};
-
-    this.update = function(callback) {
+    this.updateFields = function(callback) {
         var cache = sessionStorage.getItem('fields.'+ALM.getCurrentProject());
         if (cache) {
             that.fields = JSON.parse(cache);
@@ -252,7 +281,7 @@ openQualityServices.service('QCUtils', function() {
                         console.log('Total lookup list '+count);
 
                         sessionStorage.setItem('fields.'+ALM.getCurrentProject(), JSON.stringify(that.fields));
-                        console.log('Updated fields for project '+ ALM.getCurrentProject());
+                        console.log('Project fields updated for '+ ALM.getCurrentProject());
                         callback(null);
                     }, function() {
                         console.log('Fail');
