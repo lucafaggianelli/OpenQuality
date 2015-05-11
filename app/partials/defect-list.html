@@ -1,14 +1,29 @@
 <h1><a href="javascript:void(0)" ng-click="editPreset()">{{preset.header}}</a></h1>
 
-<div ng-show="defects" class="input-group">
-    <input id="quick-search" ng-model="searchText" placeholder="Quick filter..." 
-        ng-class="{'open':showAdv}" class="form-control" tabindex="1"/>
-    <span class="input-group-btn">
-        <button id="button-advanced-search" class="btn btn-default" ng-class="{'open':showAdv}" type="button" ng-click="showAdv = !showAdv">Advanced <span class="caret"></span></button>
-    </span>
+<div class="row">
+    <div class="col-sm-8">
+        <div ng-show="defects" class="input-group">
+            <input id="quick-search" ng-model="searchText" placeholder="Quick filter..." 
+                ng-class="{'open_':showAdv}" class="form-control" tabindex="1"/>
+            <span class="input-group-btn">
+                <button id="button-advanced-search" class="btn btn-default" ng-class="{'open_':showAdv}" type="button" ng-click="showAdv = !showAdv">Advanced <span class="caret"></span></button>
+            </span>
+        </div>
+    </div>
+
+    <div class="col-sm-4 form-group">
+        <div class="input-group">
+            <span class="input-group-btn">
+                <button class="btn btn-default" ng-disabled="!gotoDefect" type="button" ng-click="showDefect(gotoDefect)">Go to defect #</button>
+            </span>
+            <form ng-submit="showDefect(gotoDefect)">
+                <input id="defect-goto" placeholder="83" class="form-control" ng-model="gotoDefect"/>
+            </form>
+        </div>
+    </div>
 </div>
 
-<div id="advanced-search-container" class="panel panel-default" ng-show="showAdv" ng-class="{'open':showAdv}">
+<div id="advanced-search-container" class="panel panel-default" ng-show="showAdv" ng-class="{'open_':showAdv}">
     <div class="panel-body">
         <form class="form" role="form">
             <div class="form-group">

@@ -1,7 +1,9 @@
 'use strict';
 
+var manifest = require('../package.json');
+
 // App version
-var VERSION = '0.1.1-dev';
+var VERSION = manifest.version;
 
 // Poll interval for fetching QC Audit
 var NOTIFICATIONS_INTERVAL = 2 * 60;
@@ -206,6 +208,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
     function($scope, $routeParams, ALMx) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
+        $scope.gotoDefect = null;
         $scope.pageSize = 50;
         $scope.currentPage = 1;
 

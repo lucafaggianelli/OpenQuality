@@ -14,7 +14,7 @@ ALM.getCurrentDomain  = function() { return DOMAIN; }
 ALM.getCurrentProject = function() { return PROJECT; }
 ALM.getLoggedInUser = function() { return loggedInUser; }
 
-ALM.onResponse = function onResponse(response, cb, errCb) {
+ALM.onResponse = function onResponse(response, cb, errCb, xhr) {
     var jsonResponse;
     try {
         jsonResponse = $.xml2json(response);
@@ -25,16 +25,16 @@ ALM.onResponse = function onResponse(response, cb, errCb) {
         }
     }
     if (jsonResponse) {
-        cb(jsonResponse);
+        cb(jsonResponse, xhr);
     }
 }
 
 ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
     $.ajax(API_URL + path, {
-        success: function (response) {
-            ALM.onResponse(response, onSuccess, onError);
+        success: function (response, status, jqXHR) {
+            ALM.onResponse(response, onSuccess, onError, jqXHR);
         },
-        error: function(response) {
+        error: function(response, xhr) {
             onError();
             if (response.status == 401) {
                 console.log('Not logged in');
@@ -66,7 +66,7 @@ ALM.setCurrentProject = function(dom, prj) {
 
 ALM.login = function (username, password, onSuccess, onError) {
     ALM.ajax('authentication-point/j_spring_security_check', 
-        function() {
+        function(res) {
             loggedInUser = username;
             onSuccess();
         }, function() {

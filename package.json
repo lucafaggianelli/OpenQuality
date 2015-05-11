@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.1.2-preAlpha",
   "private": true,
   "name": "OpenQuality",
   "description": "Quality Center web app",
@@ -10,7 +10,7 @@
 
   "main": "app/index.html",
   "window": {
-    "toolbar": true,
+    "toolbar": false,
     "width": 800,
     "height": 600
   },
