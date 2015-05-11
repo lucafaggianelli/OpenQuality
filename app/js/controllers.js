@@ -461,13 +461,13 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     if ($scope.defect['dev-comments']) {
                         var tmp;
                         $scope.defect.comments = $scope.defect['dev-comments']
-                                .replace(/<[^>]+>/gm, '')
-                                .split(/_{3,}/g).map(function(comment) {
-                            //tmp = comment.match(/(.+)\s+&lt;.*&gt;,\s+([0-9\/]+):/);
+                                .replace(/<html>[\r\n]*<body>[\r\n]*/,'')
+                                .replace(/[\r\n]*<\/body>[\r\n]*<\/html>/,'')
+                                .split(/<b>_{10,}<\/b>/g).map(function(comment) {
                             tmp = comment.split(/(.+)\s+&lt;.*&gt;,\s+([0-9\/]+\s*[0-9:]*)\s*:/);
                             if (tmp && tmp.length == 4)
                                 return {
-                                    user: tmp[1],
+                                    user: Utils.html2txt(tmp[1]),
                                     date: tmp[2],
                                     content: tmp[3] };
                             else
@@ -477,6 +477,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                                     content: comment };
                         });
                         $scope.defect.comments.reverse();
+                        console.log($scope.defect.comments);
                     }
 
                     // Severity icon
