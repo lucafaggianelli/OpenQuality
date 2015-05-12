@@ -311,12 +311,16 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             var top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
         }
 
+        $scope.$on('updateDefectList', function() {
+            $scope.getDefects();
+        });
+
         ALMx.update($scope.domain, $scope.project, function() {
             console.log('project update is ready');
             $scope.Users = ALMx;
             $scope.statuses = ALMx.fields.status.Values;
             $scope.severities = ALMx.fields.severity.Values;
-            
+
             $scope.getDefects();
         });
     }]);

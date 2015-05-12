@@ -4,7 +4,7 @@
 
 var openQualityServices = angular.module('openQualityServices', []);
 
-openQualityServices.service('Notifications', function($filter, ALMx) {
+openQualityServices.service('Notifications', function($rootScope, $filter, ALMx) {
     // Delay for QC to update history [ms]
     var QC_AUDIT_DELAY = 20 * 60 * 1000;
 
@@ -115,6 +115,9 @@ openQualityServices.service('Notifications', function($filter, ALMx) {
             icon = users[0].gravatar+'&s=60'
 
             console.log({title: title, body: body, icon: icon});
+    
+            $rootScope.$broadcast('updateDefectList');
+
             // TODO issue #54
             notification = new Notification(title, {body: body});//, icon: icon});
             notification.onclick = function(event) {

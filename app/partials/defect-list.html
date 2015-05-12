@@ -11,15 +11,21 @@
         </div>
     </div>
 
-    <div class="col-sm-4 form-group">
+    <div class="col-sm-3 form-group">
         <div class="input-group">
             <span class="input-group-btn">
-                <button class="btn btn-default" ng-disabled="!gotoDefect" type="button" ng-click="showDefect(gotoDefect)">Go to defect #</button>
+                <button class="btn btn-primary" ng-disabled="!gotoDefect" type="button" ng-click="showDefect(gotoDefect)">Go to defect #</button>
             </span>
             <form ng-submit="showDefect(gotoDefect)">
-                <input id="defect-goto" placeholder="83" class="form-control" ng-model="gotoDefect"/>
+                <input id="defect-goto" placeholder="83" class="form-control" ng-model="gotoDefect" tabindex="2"/>
             </form>
         </div>
+    </div>
+
+    <div class="col-sm-1 form-group">
+        <button type="button" class="btn btn-default" ng-click="getDefects()" aria-label="Refresh" tabindex="3">
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
     </div>
 </div>
 
