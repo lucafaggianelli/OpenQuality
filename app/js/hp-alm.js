@@ -383,7 +383,7 @@ ALM.updateField = function(defect, field, callback) {
         }, 'PUT', xml, 'application/xml');
 }
 
-ALM.createDefect = function(fields) {
+ALM.createDefect = function(fields, callback) {
       
     var url = "rest/domains/" + DOMAIN +
             "/projects/" + PROJECT +
@@ -391,17 +391,15 @@ ALM.createDefect = function(fields) {
     
     var xml = convertFieldsBack(fields, 'defect');
 
-    console.log('will post to '+url, xml);
-
     ALM.ajax(url,
         function(data) {
-            console.log('create defect success', data)
+            callback(null, convertFields(data));
         },
         function(err) {
-            console.log('create defect error', err)
+            callback(err)
         },
         'POST',
-        xml,//convertFieldsBack(changedFields, 'defect');
+        xml,
         'application/xml');
 }
 

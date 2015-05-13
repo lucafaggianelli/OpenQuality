@@ -80,13 +80,16 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
             var prj = next.params.project;
             
             if ($scope.domain != dom || $scope.project != prj) {
-                console.log('Project changed to '+dom+':'+prj);
                 $scope.domain = dom;
                 $scope.project = prj;
                 ALM.setCurrentProject($scope.domain, $scope.project);
 
                 if ($scope.domain != null && $scope.project != null) {
+                    console.log('Project changed to '+dom+':'+prj);
                     Notifications.startNotifier();
+                } else {
+                    console.log('Exited from project');
+                    Notifications.stopNotifier();
                 }
             }
         });
@@ -160,7 +163,7 @@ openQualityControllers.controller('LoginCtrl', ['$scope', 'Settings',
                 }
             );
         }
-        
+
         if (Settings.settings.username && Settings.settings.password) {
             console.log('Found an account, will login');
             $scope.login(Settings.settings.username, Settings.settings.password);
@@ -208,6 +211,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
     function($scope, $routeParams, ALMx) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
+        $scope.loggedInUser = ALM.getLoggedInUser();
         $scope.gotoDefect = null;
         $scope.pageSize = 50;
         $scope.currentPage = 1;
@@ -293,7 +297,12 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             $scope.getDefects();
         };
 
-        $scope.updatePreset = function(filters, save) {
+        $scope.resetSearchFilters = function() {
+            $scope.searchFilters = JSON.parse(localStorage.getItem('defectsFilter'));
+            $scope.getDefects();
+        };
+
+        $scope.updateSearchFilters = function(filters, save) {
             $scope.searchFilters = filters;
             if (save)
                 localStorage.setItem('defectsFilter', JSON.stringify(searchFilters));
@@ -356,7 +365,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 }
 
                 console.log('field changed');
-                $scope.$emit('alert', {type: 'success', body: 'Successfully changed defect field"'+field+'"!'});
+                $scope.$emit('alert', {type: 'success', body: 'Successfully changed defect field "'+field+'"!'});
             });
         }
 
@@ -484,7 +493,6 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                                     content: comment };
                         });
                         $scope.defect.comments.reverse();
-                        console.log($scope.defect.comments);
                     }
 
                     // Severity icon
@@ -537,21 +545,28 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'A
         $scope.fields = ALMx.fields;
 
         $scope.createDefect = function(defect) {
-            // TODO Fix to HTML format
             // Surround with HTML and BODY tags
             defect.description = DESCRIPTION_HTML_START + defect.description + DESCRIPTION_HTML_END;
-            console.log(defect.description);
 
             // Add pre-defined fields
             defect['detected-by'] = ALM.getLoggedInUser();
             defect['creation-time'] = $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
-            console.log(defect);
             angular.forEach($scope.defectedit, function(value, key) {
                 if(key[0] == '$') return;
                 console.log(key, value.$dirty)
             });
-            ALM.createDefect(defect);
+
+            ALM.createDefect(defect, function(err, result) {
+                console.log(err,result);
+                if (err) {
+                    $scope.$emit('alert', {type:'danger', body:'Cant create defect'});
+                } else {
+                    $scope.$emit('alert', {type:'success', body:'Successfully created defect'});
+                }
+                console.log('going to', '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+result[0].id);
+                location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+result[0].id;
+            });
         }
     }]);
 

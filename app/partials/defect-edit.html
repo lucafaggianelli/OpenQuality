@@ -4,12 +4,11 @@
 <form id="defect-edit" name="defectedit">
     <div class="form-group">
         <label class="control-label">Summary</label>
-        <textarea class="form-control" ng-model="defect.name"></textarea>
+        <input type="text" class="form-control" ng-model="defect.name" />
     </div>
 
     <div class="form-group">
         <label class="control-label">Description</label>
-        <!--<textarea class="form-control" ng-model="defect.description"></textarea>-->
         <div text-angular ta-toolbar="{{toolbar}}" ng-model="defect.description"></div>
     </div>
 

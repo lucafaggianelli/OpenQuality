@@ -64,7 +64,7 @@
         <div class="list-group">
             <a class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-comment-modal">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a comment...</a>
-            <div class="list-group-item" ng-repeat="comment in defect.comments">
+            <div class="list-group-item" ng-repeat="comment in defect.comments track by $index">
                 <p class="list-group-item-heading"><b>{{comment.user}}</b> &middot; <small>{{comment.date}}</small></p>
                 <p class="list-group-item-text" ng-bind-html="comment.content"></p>
             </div>
@@ -94,7 +94,7 @@
         <div class="panel-heading"><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> <b>Attachments</b></div>
 
         <div class="list-group">
-            <a class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-attach-modal">
+            <a ng-show="false" class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-attach-modal">
 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file...</a>
             <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
                 <p><span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}} ({{getFileSizeString(attachment['file-size'])}} - {{attachment['last-modified']}})</p>

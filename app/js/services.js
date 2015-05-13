@@ -42,6 +42,12 @@ openQualityServices.service('Notifications', function($rootScope, $filter, ALMx)
         interval = setInterval(getNotifications, delaySec * 1000);
     };
 
+    this.stopNotifier = function() {
+        console.log('Stopping notification daemon');
+        if (interval)
+            clearInterval(interval);
+    };
+
     var getNotifications = function() {
         // Fix issue #50: need to fetch history some minutes before
         // lastUpdate time as QC updates the history with some delay
