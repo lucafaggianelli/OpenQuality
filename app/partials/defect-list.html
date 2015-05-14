@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-sm-8">
-        <div ng-show="defects" class="input-group">
+        <div class="input-group">
             <input id="quick-search" ng-model="searchText" placeholder="Quick filter..." 
                 ng-class="{'open_':showAdv}" class="form-control" tabindex="1"/>
             <span class="input-group-btn">
@@ -9,20 +9,20 @@
         </div>
     </div>
 
-    <div class="col-sm-3 form-group">
-        <div class="input-group">
-            <span class="input-group-btn">
-                <button class="btn btn-primary" ng-disabled="!gotoDefect" type="button" ng-click="showDefect(gotoDefect)">Go to defect #</button>
-            </span>
-            <form ng-submit="showDefect(gotoDefect)">
+    <div class="col-sm-2 form-group">
+        <form ng-submit="showDefect(gotoDefect)">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" ng-disabled="!gotoDefect" type="button" ng-click="showDefect(gotoDefect)">Go to defect #</button>
+                </span>
                 <input id="defect-goto" placeholder="83" class="form-control" ng-model="gotoDefect" tabindex="2"/>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 
-    <div class="col-sm-1 form-group">
-        <button type="button" class="btn btn-default" ng-click="getDefects()" aria-label="Refresh" tabindex="3">
-            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+    <div class="col-sm-2 form-group">
+        <button type="button" class="btn btn-default btn-block" ng-click="getDefects()" tabindex="3" title="Refresh">
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> {{(defects.length || 0)}} defects
         </button>
     </div>
 </div>
@@ -63,21 +63,28 @@
             </div>
 
             <div class="row">
-                <div class="col-sm-4 form-group">
+                <div class="col-sm-3 form-group">
+                    <label for="priority">Priority</label>
+                    <select name="priority" class="form-control" multiple ng-model="searchFilters.query.priority"
+                            ng-options="priority for priority in fields.priority.Values">
+                    </select>
+                </div>
+
+                <div class="col-sm-3 form-group">
                     <label for="severity">Severity</label>
                     <select name="severity" class="form-control" multiple ng-model="searchFilters.query.severity"
-                            ng-options="severity for severity in severities">
+                            ng-options="severity for severity in fields.severity.Values">
                     </select>
                 </div>
 
-                <div class="col-sm-4 form-group">
+                <div class="col-sm-3 form-group">
                     <label for="status">Status</label>
                     <select name="status" class="form-control" multiple ng-model="searchFilters.query.status"
-                            ng-options="status for status in statuses">
+                            ng-options="status for status in fields.status.Values">
                     </select>
                 </div>
 
-                <div class="col-sm-4 form-group">
+                <div class="col-sm-3 form-group">
                     <label for="status">Sort</label>
                     <p><button type="button" class="btn" ng-class="sortButtons.id.btn" ng-click="sort('id')">
                         <span class="glyphicon" ng-class="sortButtons.id.icon" aria-hidden="true"></span> Id</button></p>
@@ -88,16 +95,16 @@
                     <p><button type="button" class="btn" ng-class="sortButtons.severity.btn" ng-click="sort('severity')">
                         <span class="glyphicon" ng-class="sortButtons.severity.icon" aria-hidden="true"></span> Severity</button></p>
 
-                    <p ng-show="false"><button type="button" class="btn" ng-class="sortButtons.priority.btn" ng-click="sort('priority')">
+                    <p><button type="button" class="btn" ng-class="sortButtons.priority.btn" ng-click="sort('priority')">
                         <span class="glyphicon" ng-class="sortButtons.priority.icon" aria-hidden="true"></span> Priority</button></p>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-sm-12 form-group">
-                    <button class="btn btn-primary" ng-click="updateSearchFilters(searchFilters)">
+                    <button class="btn btn-primary" ng-click="getDefects()">
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search</button>
-                    <button class="btn btn-success" ng-click="updateSearchFilters(searchFilters, true)">
+                    <button class="btn btn-success" ng-click="saveFilters()">
                         <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
                     <button class="btn btn-default" ng-click="resetSearchFilters()">
                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reset</button>
@@ -107,16 +114,13 @@
     </div>
 </div>
 
-<div ng-show="!loading">
-{{totalCount}} defects queried. {{(defects| filter:searchText).length}} displayed.
-</div>
-
 <table id="defect-list" ng-show="defects" data-provides="rowlink" class="table table-hover">
     <thead>
         <tr>
             <th>#</th>
             <th>Description</th>
             <th>Status</th>
+            <th>Priority</th>
             <th>Severity</th>
             <th>Assigned To</th>
             <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
@@ -126,14 +130,17 @@
     </thead>
 
     <tbody>
-        <tr ng-repeat="defect in defects | filter: searchText | orderBy:sortFilters.predicate:sortFilters.reverse" ng-click="showDefect(defect.id)">
+        <tr class="defect-list-item"
+            ng-repeat="defect in filteredDefects = (defects | filter: searchText | orderBy:sortFilters.predicate:sortFilters.reverse)"
+            ng-click="showDefect(defect.id)">
             <td>{{defect.id}}</td>
             <td>
                 <p><b>{{defect.name}}</b></p>
                 <p ng-bind-html="defect.description | html2text | hellip: 100"></p>
             </td>
             <td ng-class="defect.statusClass">{{defect.status}}</td>
-            <td>{{defect.severity}}</td>
+            <td><span class="{{getPriorityIcon(defect.priority)}}" aria-hidden="true"></span> {{defect.priority | cleanField}}</td>
+            <td><span class="{{getSeverityIcon(defect.severity)}}" aria-hidden="true"></span> {{defect.severity | cleanField}}</td>
             <td class="defect-list-owner">
                 <div class="media">
                   <div class="media-left media-middle">

@@ -258,6 +258,21 @@ ALM.getUsers = function getUsers(cb, errCb) {
     }, errCb);
 }
 
+ALM.getLinks = function(id, callback) {
+    var url = "rest/domains/" + DOMAIN +
+            "/projects/" + PROJECT +
+            "/defects/" + id + '/defect-links';
+
+    ALM.ajax(url, function(links) {
+        if (links.length == undefined)
+            links = [links];
+
+        callback(null, links.map(function(x){ return x.defect_link; }));
+    }, function(err) {
+        callback('cant get links');
+    });
+}
+
 ALM.getDefects = function getDefects(cb, errCb, query, fields, pageSize, startIndex) {
     var computedFields = ["has-others-linkage", "has-linkage", "alert-data"];
     if (!fields) {

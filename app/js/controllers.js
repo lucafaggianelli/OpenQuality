@@ -115,7 +115,6 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
             return;
         }
 
-        console.log('server is ' + Settings.settings.serverAddress);
         ALM.setServerAddress(Settings.settings.serverAddress);
 
         ALM.tryLogin(
@@ -216,26 +215,41 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.pageSize = 50;
         $scope.currentPage = 1;
 
-        var fields = ["id","name",
-                    "description",
-                    "dev-comments",
-                    "attachment",
-                    "last-modified",
-                    "owner", "status", "severity"];
+        var fields = [
+                "id",
+                "name",
+                "description",
+                "dev-comments",
+                "attachment",
+                "last-modified",
+                "owner",
+                "status",
+                "severity",
+                "priority"];
 
-        $scope.searchFilters = JSON.parse(localStorage.getItem('defectsFilter'));
+        $scope.searchFilters = JSON.parse(localStorage.getItem('filters.search'));
+        $scope.sortFilters = JSON.parse(localStorage.getItem('filters.sort'));
 
-        $scope.sortFilters = {
-            param: 'last-modified',
-            predicate: '"last-modified"',
-            reverse: true,
-        };
+        $scope.updateSortButtons = function() {
+            angular.forEach($scope.sortButtons, function(value, key) {
+                if (key == $scope.sortFilters.param) {
+                    $scope.sortButtons[key].btn = 'btn-success';
+                    $scope.sortButtons[key].icon = $scope.sortFilters.reverse ? 
+                        'glyphicon-sort-by-attributes-alt':'glyphicon-sort-by-attributes';
+                } else {
+                    $scope.sortButtons[key].btn = 'btn-default';
+                    $scope.sortButtons[key].icon = 'glyphicon-sort-by-attributes';
+                }
+            });
+        }
 
         $scope.sortButtons = {
             'id': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
-            'last-modified': {btn:'btn-success',icon:'glyphicon-sort-by-attributes-alt'},
+            'last-modified': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
             'severity': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
+            'priority': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
         };
+        $scope.updateSortButtons();
 
         $scope.sort = function(param) {
             // If press again the sort button, reverse the order
@@ -245,17 +259,11 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                 $scope.sortFilters.param = param;
                 $scope.sortFilters.predicate = '"'+param+'"';
             }
-
-            angular.forEach($scope.sortButtons, function(value, key) {
-                if (key == $scope.sortFilters.param) {
-                    $scope.sortButtons[key].btn = 'btn-success';
-                    $scope.sortButtons[key].icon = $scope.sortFilters.reverse ? 
-                        'glyphicon-sort-by-attributes-alt':'glyphicon-sort-by-attributes';
-                } else {
-                    $scope.sortButtons[key].btn = 'btn-default';
-                }
-            });
+            $scope.updateSortButtons();
         };
+
+        $scope.getSeverityIcon = ALMx.getDefectSeverityIcon;
+        $scope.getPriorityIcon = ALMx.getDefectPriorityIcon;
 
         $scope.getDefects = function() {
             var queryString = '';
@@ -283,9 +291,13 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                     }
 
                     $scope.$apply();
+                    // TODO check if null
+                    //ALMx.lastSearch = $scope.filteredDefects.map(function(d){ return d.id; });
                 },
                 function onError() {
-                    console.log('error getting defects')
+                    console.log('error getting defects');
+                    ALMx.lastSearch = [];
+                    $scope.$apply();
                 },
                 queryString, fields, $scope.pageSize, ($scope.currentPage-1) * $scope.pageSize + 1);
         };
@@ -298,14 +310,16 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         };
 
         $scope.resetSearchFilters = function() {
-            $scope.searchFilters = JSON.parse(localStorage.getItem('defectsFilter'));
+            $scope.searchFilters = JSON.parse(localStorage.getItem('filters.search'));
+            $scope.sortFilters = JSON.parse(localStorage.getItem('filters.sort'));
+
             $scope.getDefects();
         };
 
-        $scope.updateSearchFilters = function(filters, save) {
-            $scope.searchFilters = filters;
-            if (save)
-                localStorage.setItem('defectsFilter', JSON.stringify(searchFilters));
+        $scope.saveFilters = function() {
+            console.log($scope.sortFilters);
+            localStorage.setItem('filters.search', JSON.stringify($scope.searchFilters));
+            localStorage.setItem('filters.sort', JSON.stringify($scope.sortFilters));
 
             $scope.getDefects();
         };
@@ -327,8 +341,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         ALMx.update($scope.domain, $scope.project, function() {
             console.log('project update is ready');
             $scope.Users = ALMx;
-            $scope.statuses = ALMx.fields.status.Values;
-            $scope.severities = ALMx.fields.severity.Values;
+            $scope.fields = ALMx.fields;
 
             $scope.getDefects();
         });
@@ -340,9 +353,13 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
+        $scope.defectIndex = ALMx.lastSearch.indexOf($scope.defect_id);
 
         $scope.getFileSizeString = Utils.getFileSizeString;
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
+
+        console.log('last search', ALMx.lastSearch);
+        console.log('curr defect', $scope.defectIndex);
 
         $scope.isImg = function(filename) {
             var suffix;
@@ -462,6 +479,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     "owner",
                     "detected-by",
                     "status",
+                    "priority",
                     "user-09", // Fixed in version
                     "user-01", // Terminal
                     "user-03", // Discipline
@@ -496,16 +514,21 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     }
 
                     // Severity icon
-                    if ($scope.defect.severity) {
-                        var tmp = $scope.defect.severity.match(/^(\d+)/);
-                        if (tmp && tmp.length == 2)
-                            $scope.defect.severityIcon = SEVERITY_ICONS[parseInt(tmp[1])];
-                    }
+                    $scope.defect.severityIcon = ALMx.getDefectSeverityIcon($scope.defect.severity);
+                    $scope.defect.priorityIcon = ALMx.getDefectPriorityIcon($scope.defect.priority);
 
                     $scope.$apply();
                 } else {
                     console.log('Expecting 1 defect, got ' + totalCount);
                 }
+
+                ALM.getLinks($scope.defect.id, function(err, links) {
+                    if (err)
+                        return;
+
+                    $scope.defect.links = links;
+                    $scope.$apply();
+                });
 
                 if ($scope.defect.attachment) {
                     ALM.getDefectAttachments($scope.defect.id, function(res) {
@@ -578,7 +601,9 @@ var TEXTANGULAR_TOOLBAR = "["+
     "['bold','italics','underline','strikeThrough'],"+
     "['ul','ol','indent','outdent'],"+
     "['justifyLeft','justifyCenter','justifyRight'],"+
-    "['undo','redo']"+
+    "['pre','insertLink'],"+
+    "['undo','redo','clear'],"+
+    "['html']"+
     "]";
 
 var IMGS_SUFFIX = ['.png', '.bmp', '.jpg', '.jpeg', '.gif'];

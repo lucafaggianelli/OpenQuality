@@ -17,3 +17,13 @@ openQualityFilters.filter('hellip', function() {
             return text;
     }
 });
+
+openQualityFilters.filter('cleanField', function() {
+    return function(text) {
+        var tmp = text.match(/^\d+\s*-\s*(.*)$/);
+        if (tmp && tmp.length == 2)
+            return tmp[1];
+        
+        return text;
+    }
+});

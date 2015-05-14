@@ -179,10 +179,11 @@ openQualityServices.service('ALMx', function($rootScope) {
 
     this.domain = null;
     this.project = null;
-    
+
     this.fields = {};
     this.users = {};
     this.usersArr = [];
+    this.lastSearch = [];
 
     this.update = function(domain, project, callback) {
         if (domain != this.domain || project != this.project) {
@@ -302,23 +303,50 @@ openQualityServices.service('ALMx', function($rootScope) {
                 callback('Cant fetch fields');
             });
     }
+
+    this.getDefectPriorityIcon = function(prio) {
+        if (!prio)
+            return null;
+
+        var tmp = prio.match(/^(\d+)\s*-/);
+        if (tmp && tmp.length == 2) {
+            tmp = parseInt(tmp[1])
+            if (tmp >= 0 && tmp <ALM_PRIORITY_ICONS.length);
+                return 'glyphicon glyphicon-'+ALM_PRIORITY_ICONS[tmp]+' icon-severity-'+tmp;
+        }
+
+        return null;
+    }
+
+    this.getDefectSeverityIcon = function(severity) {
+        if (!severity)
+            return null;
+
+        var tmp = severity.match(/^(\d+)\s*-/);
+        if (tmp && tmp.length == 2) {
+            tmp = parseInt(tmp[1])
+            if (tmp >= 0 && tmp <ALM_SEVERITY_ICONS.length);
+                return 'glyphicon glyphicon-'+ALM_SEVERITY_ICONS[tmp]+' icon-severity-'+tmp;
+        }
+
+        return null;
+    }
 });
 
-/*
-app.factory('ALM', function() {
-    return {
-        getFullName: function(username) {
-            return sessionStorage.users[username];
-        },
+var ALM_PRIORITY_ICONS = [
+    null,
+    'circle-arrow-down', // 1 Low
+    'arrow-down', // 2 Medium
+    'arrow-up', // 3 High
+    'circle-arrow-up', // 4 Very High
+    'exclamation-sign' // 5 Urgent
+];
 
-        getUsers: function getUsers(username, password) {
-          ALM.getUsers(
-              function cb(users) {
-                console.log('loaded users');
-              },
-              function onError(error) {
-                console.log('users loading error');
-              });
-        },
-    };
-});*/
+var ALM_SEVERITY_ICONS = [
+    null,
+    'gift', // 1 feature request
+    'sunglasses',
+    'arrow-down', // minor
+    'arrow-up', // major
+    'fire' // 5 crash data loss
+];

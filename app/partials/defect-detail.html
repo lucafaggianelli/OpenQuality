@@ -17,9 +17,25 @@
             
             <p>Affetcted terminal <span class="glyphicon glyphicon-phone" aria-hidden="true"></span> <b>{{defect['user-01']}}</b></p>
             
-            <p>Severity <span class="glyphicon glyphicon-{{defect.severityIcon}}" aria-hidden="true"></span> <b>{{defect.severity}}</b></p>
+            <div class="form-inline">
+                <div class="form-group">
+                    <label for="priority" class="control-label">Priority</label>
+                    <span class="glyphicon glyphicon-{{defect.priorityIcon}}" aria-hidden="true"></span>
+                    <select name="priority" class="form-control" ng-model="defect.priority"
+                        ng-options="val for val in fields.priority.Values" ng-change="updateField('priority')"></select>
+                </div>
+            </div>
+            
+            <div class="form-inline">
+                <div class="form-group">
+                    <label for="severity" class="control-label">Severity</label>
+                    <span class="glyphicon glyphicon-{{defect.severityIcon}}" aria-hidden="true"></span>
+                    <select name="severity" class="form-control" ng-model="defect.severity"
+                        ng-options="status for status in fields.severity.Values" ng-change="updateField('severity')"></select>
+                </div>
+            </div>
 
-            <form class="form-inline" id="defect-status">
+            <div class="form-inline" id="defect-status">
                 <div class="form-group">
                     <label for="status" class="control-label">Status</label>
                     <select name="status" class="form-control" ng-model="defect.status"
@@ -31,9 +47,9 @@
                     <select name="user-09" class="form-control" ng-model="defect['user-09']"
                         ng-options="val for val in fields['user-09'].Values" ng-change="updateField('user-09')"></select>
                 </div>
-            </form>
+            </div>
 
-            <form>
+            <div>
                 <div class="form-group">
                     <label class="control-label">Assigned to</label>
 
@@ -53,7 +69,7 @@
                         </ui-select-choices>
                     </ui-select>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -63,7 +79,7 @@
 
         <div class="list-group">
             <a class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-comment-modal">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a comment...</a>
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a comment &hellip;</a>
             <div class="list-group-item" ng-repeat="comment in defect.comments track by $index">
                 <p class="list-group-item-heading"><b>{{comment.user}}</b> &middot; <small>{{comment.date}}</small></p>
                 <p class="list-group-item-text" ng-bind-html="comment.content"></p>
@@ -95,8 +111,8 @@
 
         <div class="list-group">
             <a ng-show="false" class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-attach-modal">
-<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file...</a>
-            <a class="list-group-item" ng-repeat="attachment in defect.attachments" href="{{attachment.url}}" download>
+<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Attach a file &hellip;</a>
+            <a class="list-group-item" ng-repeat="attachment in defect.attachments" ng-href="{{attachment.url}}" download>
                 <p><span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}} ({{getFileSizeString(attachment['file-size'])}} - {{attachment['last-modified']}})</p>
                 <p ng-if="attachment.description" ta-bind ng-model="attachment.description"></p>
                 <p class="thumbnail" ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
@@ -125,4 +141,15 @@
       </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 
-    <div class="alert alert-danger" ng-show="errorMessage">{{errorMessage}}</div>
+    <!-- Links -->
+    <div class="panel panel-default">
+        <div class="panel-heading"><span class="glyphicon glyphicon-link" aria-hidden="true"></span> <b>Related defects</b></div>
+
+        <div class="list-group">
+            <a ng-show="false" class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-link-modal">
+<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a related defect &hellip;</a>
+            <a class="list-group-item" ng-repeat="link in defect.links" ng-href="#/{{domain}}/projects/{{project}}/defects/{{link.second_endpoint_id.text}}">
+                <p><span class="glyphicon" aria-hidden="true"></span> <span class="text-info"><strong>#{{link.second_endpoint_id.text}}</span> {{link.second_endpoint_name}}</strong> <small>({{link.comment}})</small></p>
+            </a>
+        </div>
+    </div>
