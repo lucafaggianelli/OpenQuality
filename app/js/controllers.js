@@ -291,8 +291,10 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                     }
 
                     $scope.$apply();
-                    // TODO check if null
-                    //ALMx.lastSearch = $scope.filteredDefects.map(function(d){ return d.id; });
+                    if (!$scope.filteredDefects)
+                        ALMx.lastSearch = [];
+                    else
+                        ALMx.lastSearch = $scope.filteredDefects.map(function(d){ return d.id; });
                 },
                 function onError() {
                     console.log('error getting defects');
@@ -353,13 +355,15 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
+        $scope.lastSearch = ALMx.lastSearch;
         $scope.defectIndex = ALMx.lastSearch.indexOf($scope.defect_id);
 
         $scope.getFileSizeString = Utils.getFileSizeString;
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
-        console.log('last search', ALMx.lastSearch);
-        console.log('curr defect', $scope.defectIndex);
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
 
         $scope.isImg = function(filename) {
             var suffix;
@@ -542,6 +546,18 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             },
             queryString, fields);
         }
+
+        $scope.backToSearch = function() {
+            location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects';
+        };
+
+        $scope.nextDefect = function() {
+            location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+$scope.lastSearch[$scope.defectIndex+1];
+        };
+
+        $scope.prevDefect = function() {
+            location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+$scope.lastSearch[$scope.defectIndex-1];
+        };
 
         ALMx.update($scope.domain, $scope.project, function() {
             console.log('project update is ready');

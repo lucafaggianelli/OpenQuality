@@ -29,6 +29,10 @@ body {
     border-top:none;
 }
 
+#defect-detail-title {
+    margin-top:0;
+}
+
 .defect-list-item {
     cursor:pointer;
 }
