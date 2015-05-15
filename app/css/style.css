@@ -15,6 +15,16 @@ body {
     padding: 0 10%;
 }
 
+#nav-user-dropdown img {
+    height:32px;
+    width:32px;
+}
+
+#nav-user-dropdown .dropdown-toggle {
+    padding-top:9px;
+    padding-bottom:9px;
+}
+
 #quick-search.open {
     border-bottom-left-radius:0;
 }

@@ -230,14 +230,26 @@ ALM.getProjects = function getProjects(domain, cb, errCb) {
     }, errCb);
 }
 
-ALM.getUsers = function getUsers(cb, errCb) {
-    var path = "rest/domains/" + DOMAIN +
+ALM.getUsers = function getUsers(cb, errCb, name, dom, prj) {
+    var path = '';
+
+    if (!name) {
+        path = "rest/domains/" + DOMAIN +
                "/projects/" + PROJECT +
                "/customization/users";
+    } else {
+        path = "rest/domains/" + dom +
+               "/projects/" + prj +
+               "/customization/users?name="+name;
+    }
 
     ALM.ajax(path, function onSuccess(usersJSON) {
         var users = {};
         var el;
+
+        if (usersJSON.User.length === undefined)
+            usersJSON.User = [usersJSON.User];
+
         for (var i in usersJSON.User) {
             el = usersJSON.User[i];
 

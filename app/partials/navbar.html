@@ -50,9 +50,10 @@
       </form>
 
       <!-- User -->
-      <ul ng-show="user" class="nav navbar-nav navbar-right">
+      <ul ng-show="user" id="nav-user-dropdown" class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{user}} <span class="caret"></span></a>
+          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              <img ng-src="{{user.gravatar}}" /> {{user.fullname || user.id}} <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
             <li ng-show="false"><a href="#"><span class="glyphicon glyphicon-user"></span> Profile</a></li>
             <li><a href="#/settings"><span class="glyphicon glyphicon-cog"></span> Settings</a></li>

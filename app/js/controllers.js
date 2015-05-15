@@ -52,25 +52,26 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
             alertTimeout = $timeout($scope.closeAlert, 5000);
         };
 
-        var loadAllDomains = function() {
+        var loadAllDomains = function(callback) {
             // Get all domains
             ALM.getDomains(function(err, domains) {
                 if (err) {
-                    console.log(err);
+                    callback(err);
                     return;
                 }
 
                 $scope.domains = {};
                 // Get all project for each domain
-                async.each(domains, function(dom, callback) {
+                async.each(domains, function(dom, cb) {
                     ALM.getProjects(dom, function(projects) {
                         $scope.domains[dom] = projects;
-                        callback();
+                        cb();
                     }, function() {
-                        callback('cannot init projects')
+                        cb('cannot init projects')
                     });
                 }, function(err) {
                     $scope.$apply();
+                    callback(err);
                 });
             });
         }
@@ -96,11 +97,23 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
 
         $scope.$on('alert', $scope.showAlert);
 
-        $scope.$on('loggedIn', function(event, data) {
-            if (data) {
+        $scope.$on('loggedIn', function(event, username) {
+            if (username) {
                 // Logged in
-                $scope.user = ALM.getLoggedInUser();
-                loadAllDomains();
+                loadAllDomains(function() {
+                    var dom;
+                    for (var i in $scope.domains) {
+                        dom = i; break;
+                    }
+
+                    ALM.getUsers(function(u) {
+                        $scope.user = u[username];
+                        $scope.$apply();
+                    }, function() {
+                        $scope.user = {id: ALM.getLoggedInUser()};
+                        $scope.$apply();
+                    }, username, dom, $scope.domains[dom][0]);
+                });
             } else {
                 // Logged out
                 $scope.user = null;
@@ -119,8 +132,20 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
 
         ALM.tryLogin(
             function(username) {
-                $scope.user = username;
-                loadAllDomains();
+                loadAllDomains(function() {
+                    var dom;
+                    for (var i in $scope.domains) {
+                        dom = i; break;
+                    }
+
+                    ALM.getUsers(function(u) {
+                        $scope.user = u[username];
+                        $scope.$apply();
+                    }, function() {
+                        $scope.user = {id: ALM.getLoggedInUser()};
+                        $scope.$apply();
+                    }, username, dom, $scope.domains[dom][0]);
+                });
             },
             function(error) {
                 console.log('trylogin: not logged in')
