@@ -355,6 +355,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.defect_id  = $routeParams.defect;
+        $scope.defect = null;
         $scope.lastSearch = ALMx.lastSearch;
         $scope.defectIndex = ALMx.lastSearch.indexOf($scope.defect_id);
 
@@ -362,6 +363,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
         $(function () {
+            scrollTo(0,0);
             $('[data-toggle="tooltip"]').tooltip()
         })
 
@@ -523,7 +525,9 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
                     $scope.$apply();
                 } else {
-                    console.log('Expecting 1 defect, got ' + totalCount);
+                    $scope.defectNotFound = true;
+                    $scope.$apply();
+                    return;
                 }
 
                 ALM.getLinks($scope.defect.id, function(err, links) {
@@ -548,15 +552,11 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         }
 
         $scope.backToSearch = function() {
-            location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects';
+            location.hash = '#/'+$scope.domain+'/projects/'+$scope.project+'/defects';
         };
 
-        $scope.nextDefect = function() {
-            location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+$scope.lastSearch[$scope.defectIndex+1];
-        };
-
-        $scope.prevDefect = function() {
-            location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+$scope.lastSearch[$scope.defectIndex-1];
+        $scope.gotoDefect = function(id) {
+            location.hash = '#/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+id;
         };
 
         ALMx.update($scope.domain, $scope.project, function() {

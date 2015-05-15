@@ -1,6 +1,7 @@
+<div ng-if="defect">
 <div ng-if="lastSearch.length > 0 && defectIndex != -1" class="btn-group btn-group-justified" role="group">
     <div class="btn-group" role="group">
-        <button type="button" class="btn btn-default" ng-click="prevDefect()" ng-disabled="defectIndex <= 0">&laquo;<span ng-hide="defectIndex <= 0"> #{{lastSearch[defectIndex-1]}}</span></button>
+        <button type="button" class="btn btn-default" ng-click="gotoDefect(lastSearch[defectIndex-1])" ng-disabled="defectIndex <= 0">&laquo;<span ng-hide="defectIndex <= 0"> #{{lastSearch[defectIndex-1]}}</span></button>
     </div>
 
     <div class="btn-group" role="group">
@@ -8,7 +9,7 @@
     </div>
 
     <div class="btn-group" role="group">
-        <button type="button" class="btn btn-default" ng-click="nextDefect()" ng-disabled="defectIndex >= (lastSearch.length-1)"><span ng-hide="defectIndex >= (lastSearch.length-1)">#{{lastSearch[defectIndex+1]}} </span>&raquo;</button>
+        <button type="button" class="btn btn-default" ng-click="gotoDefect(lastSearch[defectIndex+1])" ng-disabled="defectIndex >= (lastSearch.length-1)"><span ng-hide="defectIndex >= (lastSearch.length-1)">#{{lastSearch[defectIndex+1]}} </span>&raquo;</button>
     </div>
 </div>
 
@@ -161,8 +162,11 @@
     <div class="list-group">
         <a ng-show="false" class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-link-modal">
 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a related defect &hellip;</a>
-        <a class="list-group-item" ng-repeat="link in defect.links" ng-href="#/{{domain}}/projects/{{project}}/defects/{{link.second_endpoint_id.text}}">
+        <a href="" class="list-group-item" ng-repeat="link in defect.links" ng-click="gotoDefect(link.second_endpoint_id.text)">
             <p><span class="glyphicon" aria-hidden="true"></span> <span class="text-info"><strong>#{{link.second_endpoint_id.text}}</span> {{link.second_endpoint_name}}</strong> <small>({{link.comment}})</small></p>
         </a>
     </div>
 </div>
+</div> <!-- If defect found -->
+
+<h1 ng-if="defectNotFound">Sorry, defect <span class="text-danger">#{{defect_id}}</span> doesn't exist!</h1>
