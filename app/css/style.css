@@ -25,6 +25,25 @@ body {
     padding-bottom:9px;
 }
 
+.news-item {
+    margin:0;
+    padding:12px 0;
+    border-top:1px solid #EEE;
+}
+
+.news-item:first-child {
+    border:none;
+}
+
+.news-item img.media-object {
+    width:32px;
+    height:32px;
+}
+
+.news-item-time {
+    color:#999;
+}
+
 #quick-search.open {
     border-bottom-left-radius:0;
 }

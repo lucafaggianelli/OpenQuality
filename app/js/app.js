@@ -7,6 +7,7 @@ var openQualityApp = angular.module('openQualityApp', [
     'ui.select',
     'ngSanitize',
     'textAngular',
+    'angularMoment',
 
     'openQualityControllers',
     'openQualityServices',
