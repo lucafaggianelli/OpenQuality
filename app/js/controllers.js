@@ -20,10 +20,6 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
         $scope.user = ALM.getLoggedInUser();
         $scope.loadingModal = angular.element('#loading');
 
-        $scope.hello = function(num) {
-            console.log(num);
-        };
-
         var alertTimeout = null;
         $scope.alert = {
             show: false,
@@ -87,6 +83,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
 
                 if ($scope.domain != null && $scope.project != null) {
                     console.log('Project changed to '+dom+':'+prj);
+                    localStorage.setItem('lastProject', dom+'.'+prj);
                     Notifications.startNotifier();
                 } else {
                     console.log('Exited from project');
@@ -129,6 +126,15 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
         }
 
         ALM.setServerAddress(Settings.settings.serverAddress);
+
+        if (Settings.settings.rememberProject && (!location.hash || location.hash == '#/')) {
+            var lastProject = localStorage.getItem('lastProject');
+            if (lastProject) {
+                lastProject = lastProject.split('.');
+                console.log('Your last project is '+lastProject);
+                location.hash = '/'+lastProject[0]+'/projects/'+lastProject[1]+'/defects';
+            }
+        }
 
         ALM.tryLogin(
             function(username) {
