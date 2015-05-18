@@ -14,13 +14,13 @@
         <div class="pull-right news-item-time" data-toggle="tooltip" title="{{n.Time}}" data-placement="left">
             <small><span class="glyphicon glyphicon-time" aria-hidden="true"></span> <span am-time-ago="n.Time"></span></small>
         </div>
-        
+
         <div class="media-left">
-            <img class="media-object" ng-src="{{Users.getUser(n.User).gravatar}}" alt="">
+            <img class="media-object" ng-src="{{Users.getUser(n.User).gravatar}}">
         </div>
 
         <div class="media-body">
-            <h4 class="media-heading"><strong>{{Users.getUser(n.User).fullname}}</strong> updated {{n.ParentType}} <a ng-href="{{getDefectUrl(n.ParentId)}}">#{{n.ParentId}}</a></h4>
+            <h4 class="media-heading"><strong>{{Users.getUser(n.User).fullname}}</strong> {{n.Verb}} {{n.ParentType}} <a ng-href="{{getDefectUrl(n.ParentId)}}">#{{n.ParentId}}</a></h4>
             <p ng-if="n.Properties">Changed properties <strong ng-repeat="p in n.Properties.Property">{{(p.Label) + (!$last?', ':'')}}</strong></p>
         </div>
     </div>
