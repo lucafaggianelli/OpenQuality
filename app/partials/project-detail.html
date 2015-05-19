@@ -1,2 +1,28 @@
 <h1>{{project}}</h1>
-<a ng-href="#/{{domain}}/projects/{{project}}/defects" class="btn btn-default btn-block">Defects</a>
+
+<div class="progress">
+    <div class="progress-bar progress-bar-success" style="width: {{(stats.closed/stats.total) * 100}}%">
+        {{stats.closed||50}} closed
+    </div>
+    <div class="progress-bar progress-bar-danger" style="width: {{100 - (stats.closed/stats.total) * 100}}%">
+        {{stats.total-stats.closed}} open
+    </div>
+</div>
+
+<div>
+    <p id="news-list-title">This week update</p>
+    <div class="news-item media" ng-repeat="n in news">
+        <div class="pull-right news-item-time" data-toggle="tooltip" title="{{n.Time}}" data-placement="left">
+            <small><span class="glyphicon glyphicon-time" aria-hidden="true"></span> <span am-time-ago="n.Time"></span></small>
+        </div>
+
+        <div class="media-left">
+            <img class="media-object" ng-src="{{Users.getUser(n.User).gravatar}}">
+        </div>
+
+        <div class="media-body">
+            <h4 class="media-heading"><strong>{{Users.getUser(n.User).fullname}}</strong> {{n.Verb}} {{n.ParentType}} <a ng-href="{{getDefectUrl(n.ParentId)}}">#{{n.ParentId}}</a></h4>
+            <p ng-if="n.Properties">Changed properties: <strong ng-repeat="p in n.Properties.Property">{{(p.Label) + (!$last?', ':'')}}</strong></p>
+        </div>
+    </div>
+</div>

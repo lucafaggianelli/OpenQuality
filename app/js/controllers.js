@@ -229,12 +229,48 @@ openQualityControllers.controller('ProjectListCtrl', ['$scope',
             });
     }]);
 
-openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams',
-    function($scope, $routeParams) {
-        // TODO Deprecated
-        console.warn('ProjectDetailCtrl implement me as dashboard');
+openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', 'ALMx',
+    function($scope, $routeParams, ALMx) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
+        $scope.news = [];
+        $scope.stats = {};
+
+        $scope.getDefectUrl = function(id) {
+            return '#/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+id;
+        }
+
+        $scope.getHistory = function() {
+            var time = moment().startOf('week').format('YYYY-MM-DD');
+            ALM.getProjectHistory(time, function(err, history) {
+                console.log(history);
+                $scope.news = history.Audit;
+                $scope.$apply();
+            });
+        };
+
+        $scope.getStats = function() {
+            ALM.getDefects(function(defects, count) {
+                $scope.stats.closed = parseInt(count);
+                $scope.$apply();
+            }, function() {
+            }, 'status[Closed OR Fixed OR Rejected]', ['id'],1,1);
+
+            ALM.getDefects(function(defects, count) {
+                $scope.stats.total = parseInt(count);
+                $scope.$apply();
+            }, function() {
+            }, 'status[*]', ['id'],1,1);
+        };
+
+        ALMx.update($scope.domain, $scope.project, function() {
+            console.log('project update is ready');
+            $scope.Users = ALMx;
+            $scope.fields = ALMx.fields;
+
+            $scope.getHistory();
+            $scope.getStats();
+        });
     }]);
 
 openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', 'ALMx',
@@ -394,8 +430,8 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         });
     }]);
 
-openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'ALMx', '$filter',
-    function($scope, $routeParams, ALMx, $filter) {
+openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'ALMx',
+    function($scope, $routeParams, ALMx) {
         var originalDefect = null;
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
@@ -470,7 +506,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
                 var newComment = {
                     user: ALMx.getUser(ALM.getLoggedInUser()).fullname,
-                    date: $filter('date')(new Date(),'yyyy/MM/dd HH:mm:ss')+':',
+                    date: moment().format('YYYY/MM/DD HH:mm:ss')+':',
                     content: $scope.newComment.replace(/<[^>]+>/gm, '')
                 };
                 var html = '';
@@ -613,8 +649,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         });
     }]);
 
-openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'ALMx', '$filter',
-    function($scope, $routeParams, ALMx, $filter) {
+openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'ALMx',
+    function($scope, $routeParams, ALMx) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
@@ -634,7 +670,7 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'A
 
             // Add pre-defined fields
             defect['detected-by'] = ALM.getLoggedInUser();
-            defect['creation-time'] = $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss');
+            defect['creation-time'] = moment().format('YYYY-MM-DD HH:mm:ss');
 
             angular.forEach($scope.defectedit, function(value, key) {
                 if(key[0] == '$') return;

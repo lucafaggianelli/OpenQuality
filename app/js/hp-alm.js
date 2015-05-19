@@ -7,6 +7,13 @@ var ALM = {};
 var loggedInUser = null;
 window.ALM = ALM; // TODO for debug purpose
 
+ALM.CLOSED_STATUSES = ['Closed', 'Fixed', 'Rejected'];
+ALM.AUDIT_VERBS = {
+    'UPDATE': 'updated',
+    'CLOSE': 'closed',
+    'CREATE': 'created'
+};
+
 // Setters / Getters
 ALM.setServerAddress = function(url) { API_URL = url; }
 ALM.getServerAddress = function() { return API_URL; }
@@ -163,6 +170,29 @@ ALM.getProjectHistory = function(time, callback) {
         if (history && parseInt(history.TotalResults) == 1) {
             history.Audit = [history.Audit];
         }
+
+        var tmp;
+        for (var i in history.Audit) {
+            if (history.Audit[i].Properties.Property) {
+                if (!history.Audit[i].Properties.Property.length)
+                    history.Audit[i].Properties.Property = [history.Audit[i].Properties.Property];
+
+                for (var j in history.Audit[i].Properties.Property) {
+                    if (history.Audit[i].Properties.Property[j].Name == 'status') {
+                        tmp = history.Audit[i].Properties.Property[j].NewValue;
+                        if (tmp == 'New')
+                            history.Audit[i].Action = 'CREATE';
+                        else if (ALM.CLOSED_STATUSES.indexOf(tmp) != -1)
+                            history.Audit[i].Action = 'CLOSE';
+
+                        break;
+                    }
+                }
+            }
+            history.Audit[i].Verb = ALM.AUDIT_VERBS[history.Audit[i].Action];
+            console.log(history.Audit[i].Verb);
+        }
+
         callback(null, history);
     }, function() {
         callback('failed to get history');
