@@ -25,6 +25,11 @@ body {
     padding-bottom:9px;
 }
 
+#news-list-title {
+    text-align:center;
+    color:#BBB;
+}
+
 .news-item {
     margin:0;
     padding:12px 0;

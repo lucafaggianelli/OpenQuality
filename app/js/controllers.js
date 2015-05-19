@@ -229,8 +229,8 @@ openQualityControllers.controller('ProjectListCtrl', ['$scope',
             });
     }]);
 
-openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', '$filter', 'ALMx',
-    function($scope, $routeParams, $filter, ALMx) {
+openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', 'ALMx',
+    function($scope, $routeParams, ALMx) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.news = [];
@@ -241,7 +241,7 @@ openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams'
         }
 
         $scope.getHistory = function() {
-            var time = $filter('date')(new Date(), 'yyyy-MM-dd')
+            var time = moment().startOf('week').format('YYYY-MM-DD');
             ALM.getProjectHistory(time, function(err, history) {
                 console.log(history);
                 $scope.news = history.Audit;
@@ -416,8 +416,8 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         });
     }]);
 
-openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'ALMx', '$filter',
-    function($scope, $routeParams, ALMx, $filter) {
+openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'ALMx',
+    function($scope, $routeParams, ALMx) {
         var originalDefect = null;
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
@@ -492,7 +492,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
                 var newComment = {
                     user: ALMx.getUser(ALM.getLoggedInUser()).fullname,
-                    date: $filter('date')(new Date(),'yyyy/MM/dd HH:mm:ss')+':',
+                    date: moment().format('YYYY/MM/DD HH:mm:ss')+':',
                     content: $scope.newComment.replace(/<[^>]+>/gm, '')
                 };
                 var html = '';
@@ -635,8 +635,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         });
     }]);
 
-openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'ALMx', '$filter',
-    function($scope, $routeParams, ALMx, $filter) {
+openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'ALMx',
+    function($scope, $routeParams, ALMx) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
@@ -656,7 +656,7 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'A
 
             // Add pre-defined fields
             defect['detected-by'] = ALM.getLoggedInUser();
-            defect['creation-time'] = $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss');
+            defect['creation-time'] = moment().format('YYYY-MM-DD HH:mm:ss');
 
             angular.forEach($scope.defectedit, function(value, key) {
                 if(key[0] == '$') return;

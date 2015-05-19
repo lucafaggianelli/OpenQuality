@@ -173,15 +173,20 @@ ALM.getProjectHistory = function(time, callback) {
 
         var tmp;
         for (var i in history.Audit) {
-            for (var j in history.Audit[i].Properties.Property) {
-                if (history.Audit[i].Properties.Property[j].Name == 'status') {
-                    tmp = history.Audit[i].Properties.Property[j].NewValue;
-                    if (tmp == 'New')
-                        history.Audit[i].Action = 'CREATE';
-                    else if (ALM.CLOSED_STATUSES.indexOf(tmp) != -1)
-                        history.Audit[i].Action = 'CLOSE';
+            if (history.Audit[i].Properties.Property) {
+                if (!history.Audit[i].Properties.Property.length)
+                    history.Audit[i].Properties.Property = [history.Audit[i].Properties.Property];
 
-                    break;
+                for (var j in history.Audit[i].Properties.Property) {
+                    if (history.Audit[i].Properties.Property[j].Name == 'status') {
+                        tmp = history.Audit[i].Properties.Property[j].NewValue;
+                        if (tmp == 'New')
+                            history.Audit[i].Action = 'CREATE';
+                        else if (ALM.CLOSED_STATUSES.indexOf(tmp) != -1)
+                            history.Audit[i].Action = 'CLOSE';
+
+                        break;
+                    }
                 }
             }
             history.Audit[i].Verb = ALM.AUDIT_VERBS[history.Audit[i].Action];
