@@ -264,7 +264,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.updateSortButtons = function() {
             angular.forEach($scope.sortButtons, function(value, key) {
                 if (key == $scope.sortFilters.param) {
-                    $scope.sortButtons[key].btn = 'btn-success';
+                    $scope.sortButtons[key].btn = 'btn-primary';
                     $scope.sortButtons[key].icon = $scope.sortFilters.reverse ? 
                         'glyphicon-sort-by-attributes-alt':'glyphicon-sort-by-attributes';
                 } else {
@@ -304,6 +304,17 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                 var values, query;
                 for (var param in $scope.searchFilters.query) {
                     values = $scope.searchFilters.query[param];
+
+                    // When the search param is not set
+                    if (values === undefined || values === null)
+                        continue;
+
+                    console.log(param, values)
+
+                    // Make single values as arrays
+                    if (typeof(values) == 'string')
+                        values = [values];
+                    
                     // Literals must be quoted to avoid white space issues
                     values = values.map(function(x){return '"'+x+'"';});
                     queryString += param + '[' + values.join(' OR ') + '];';

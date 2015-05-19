@@ -40,29 +40,21 @@
                 </div>
 
                 <div class="col-sm-4 form-group">
-                    <ui-select class="" ng-model="searchFilters.query.owner" ng-disabled="disabled"
-                            reset-search-input="false" on-select="">
-                        <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
-                        <ui-select-choices repeat="user.id as user in Users.usersArr | filter: $select.search">
-                            <div class="media">
-                              <div class="media-left">
-                                  <img class="media-object" ng-src="{{user.gravatar}}&s=32">
-                              </div>
-                              <div class="media-body">
-                                <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id"></h4>
-                                <small>{{user.email}}</small>
-                              </div>
-                            </div>
-                        </ui-select-choices>
-                    </ui-select>
+                    
                 </div>
 
                 <div class="col-sm-4 form-group">
-                    <button class="btn btn-default" ng-click="searchFilters.query.owner = loggedInUser">Me</button>
                 </div>
             </div>
 
             <div class="row">
+                <div class="col-sm-3 form-group">
+                    <label for="status">Status</label>
+                    <select name="status" class="form-control" multiple ng-model="searchFilters.query.status"
+                            ng-options="status for status in fields.status.Values">
+                    </select>
+                </div>
+
                 <div class="col-sm-3 form-group">
                     <label for="priority">Priority</label>
                     <select name="priority" class="form-control" multiple ng-model="searchFilters.query.priority"
@@ -78,13 +70,35 @@
                 </div>
 
                 <div class="col-sm-3 form-group">
-                    <label for="status">Status</label>
-                    <select name="status" class="form-control" multiple ng-model="searchFilters.query.status"
-                            ng-options="status for status in fields.status.Values">
-                    </select>
-                </div>
+                    <label for="severity">Assigned to</label>
 
-                <div class="col-sm-3 form-group">
+                    <ui-select ng-model="searchFilters.query.owner" ng-disabled="disabled"
+                            reset-search-input="false" on-select="">
+                        <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
+                        <ui-select-choices repeat="user.id as user in Users.usersArr | filter: $select.search">
+                            <div class="media">
+                              <div class="media-left">
+                                  <img class="media-object" ng-src="{{user.gravatar}}&s=32">
+                              </div>
+                              <div class="media-body">
+                                <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id"></h4>
+                                <small>{{user.email}}</small>
+                              </div>
+                            </div>
+                        </ui-select-choices>
+                    </ui-select>
+                    
+                    <div class="btn-group btn-group-justified search-owner-preset" role="group" aria-label="...">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-default" ng-class="{'btn-primary':searchFilters.query.owner==null}" ng-click="searchFilters.query.owner = null"><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span></button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-default" ng-class="{'btn-primary':searchFilters.query.owner==loggedInUser}" ng-click="searchFilters.query.owner = loggedInUser">Me</button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-default" ng-class="{'btn-primary':searchFilters.query.owner==''}" ng-click="searchFilters.query.owner = ''">None</button>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -165,6 +179,8 @@
         </tr>
     </tbody>
 </table>
+
+<h1 ng-show="!defects || defects.length == 0">Sorry, there isn't any defect matching your query</h1>
 
 <nav ng-show="totalPages.length > 1">
   <ul class="pagination">
