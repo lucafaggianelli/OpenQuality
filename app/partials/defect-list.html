@@ -175,7 +175,7 @@
             </td>
             <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
             <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>
-            <td>{{defect['last-modified']}}</td>
+            <td class="defect-list-lastmodified" title="{{defect['last-modified']}}"><span am-time-ago="defect['last-modified']"></span></td>
         </tr>
     </tbody>
 </table>

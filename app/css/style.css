@@ -89,6 +89,10 @@ table#defect-list th.sortable {
     width:32px;
 }
 
+.defect-list-lastmodified {
+    white-space:nowrap;
+}
+
 .defect-detail-description {
     margin:0 10px 15px 10px;
 }
