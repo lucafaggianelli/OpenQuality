@@ -4,7 +4,7 @@
             <input id="quick-search" ng-model="searchText" placeholder="Quick filter..." 
                 ng-class="{'open_':showAdv}" class="form-control" tabindex="1"/>
             <span class="input-group-btn">
-                <button id="button-advanced-search" class="btn btn-default" ng-class="{'open_':showAdv}" type="button" ng-click="showAdv = !showAdv">Advanced <span class="caret"></span></button>
+                <button id="button-advanced-search" class="btn btn-default" type="button" ng-click="showAdv = !showAdv">Advanced <span class="caret"></span></button>
             </span>
         </div>
     </div>
@@ -27,9 +27,9 @@
     </div>
 </div>
 
-<div id="advanced-search-container" class="panel panel-default" ng-show="showAdv" ng-class="{'open_':showAdv}">
+<div id="advanced-search-container" class="panel panel-default" ng-show="showAdv">
     <div class="panel-body">
-        <form class="form" role="form">
+        <form class="form" name="searchForm" role="form">
             <div class="form-group">
                 <input class="form-control" ng-model="searchFilters.header" placeholder="Search..."/>
             </div>
@@ -85,18 +85,26 @@
                 </div>
 
                 <div class="col-sm-3 form-group">
-                    <label for="status">Sort</label>
-                    <p><button type="button" class="btn" ng-class="sortButtons.id.btn" ng-click="sort('id')">
-                        <span class="glyphicon" ng-class="sortButtons.id.icon" aria-hidden="true"></span> Id</button></p>
+                </div>
 
-                    <p><button type="button" class="btn" ng-class="sortButtons['last-modified'].btn" ng-click="sort('last-modified')">
-                        <span class="glyphicon" ng-class="sortButtons['last-modified'].icon" aria-hidden="true"></span> Last Modified</button></p>
+            </div>
 
-                    <p><button type="button" class="btn" ng-class="sortButtons.severity.btn" ng-click="sort('severity')">
-                        <span class="glyphicon" ng-class="sortButtons.severity.icon" aria-hidden="true"></span> Severity</button></p>
+            <div class="row">
+                <div class="col-sm-12 form-group">
+                    <label>Sort</label><br/>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn" ng-class="sortButtons.id.btn" ng-click="sort('id')">
+                            <span class="glyphicon" ng-class="sortButtons.id.icon" aria-hidden="true"></span> Id</button>
 
-                    <p><button type="button" class="btn" ng-class="sortButtons.priority.btn" ng-click="sort('priority')">
-                        <span class="glyphicon" ng-class="sortButtons.priority.icon" aria-hidden="true"></span> Priority</button></p>
+                        <button type="button" class="btn" ng-class="sortButtons['last-modified'].btn" ng-click="sort('last-modified')">
+                            <span class="glyphicon" ng-class="sortButtons['last-modified'].icon" aria-hidden="true"></span> Last Modified</button>
+
+                        <button type="button" class="btn" ng-class="sortButtons.severity.btn" ng-click="sort('severity')">
+                            <span class="glyphicon" ng-class="sortButtons.severity.icon" aria-hidden="true"></span> Severity</button>
+
+                        <button type="button" class="btn" ng-class="sortButtons.priority.btn" ng-click="sort('priority')">
+                            <span class="glyphicon" ng-class="sortButtons.priority.icon" aria-hidden="true"></span> Priority</button>
+                    </div>
                 </div>
             </div>
 
@@ -104,9 +112,9 @@
                 <div class="col-sm-12 form-group">
                     <button class="btn btn-primary" ng-click="getDefects()">
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search</button>
-                    <button class="btn btn-success" ng-click="saveFilters()">
+                    <button class="btn btn-success" ng-disabled="searchForm.$pristine" ng-click="saveFilters()">
                         <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-                    <button class="btn btn-default" ng-click="resetSearchFilters()">
+                    <button class="btn btn-default" ng-disabled="searchForm.$pristine" ng-click="resetSearchFilters()">
                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reset</button>
                 </div>
             </div>
@@ -117,15 +125,15 @@
 <table id="defect-list" ng-show="defects" data-provides="rowlink" class="table table-hover">
     <thead>
         <tr>
-            <th>#</th>
+            <th class="sortable" ng-click="sort('id')">#<span ng-show="sortFilters.param=='id'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
             <th>Description</th>
             <th>Status</th>
-            <th>Priority</th>
-            <th>Severity</th>
+            <th class="sortable" ng-click="sort('priority')">Priority<span ng-show="sortFilters.param=='priority'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
+            <th class="sortable" ng-click="sort('severity')">Severity<span ng-show="sortFilters.param=='severity'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
             <th>Assigned To</th>
             <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
             <th><span class="glyphicon glyphicon-comment" aria-hidden="true"></span></th>
-            <th><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span></th>
+            <th class="sortable" ng-click="sort('last-modified')"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span><span ng-show="sortFilters.param=='last-modified'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
         </tr>
     </thead>
 

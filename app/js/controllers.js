@@ -290,6 +290,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                 $scope.sortFilters.param = param;
                 $scope.sortFilters.predicate = '"'+param+'"';
             }
+            $scope.searchForm.$setDirty();
             $scope.updateSortButtons();
         };
 
@@ -345,6 +346,8 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.resetSearchFilters = function() {
             $scope.searchFilters = JSON.parse(localStorage.getItem('filters.search'));
             $scope.sortFilters = JSON.parse(localStorage.getItem('filters.sort'));
+            $scope.updateSortButtons();
+            $scope.searchForm.$setPristine();
 
             $scope.getDefects();
         };

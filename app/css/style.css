@@ -25,6 +25,15 @@ body {
     padding-bottom:9px;
 }
 
+table#defect-list th {
+    white-space:nowrap;
+}
+
+table#defect-list th.sortable {
+    cursor:pointer;
+    color:#0078B6;
+}
+
 #quick-search.open {
     border-bottom-left-radius:0;
 }
