@@ -20,9 +20,11 @@ ALM.getServerAddress = function() { return API_URL; }
 ALM.getCurrentDomain  = function() { return DOMAIN; }
 ALM.getCurrentProject = function() { return PROJECT; }
 ALM.getLoggedInUser = function() { return loggedInUser; }
+ALM.XML_UNICODE_REGEX = /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]+/g;
 
 ALM.onResponse = function onResponse(response, cb, errCb, xhr) {
     var jsonResponse;
+
     try {
         jsonResponse = $.xml2json(response);
     } catch(err) {
@@ -31,6 +33,7 @@ ALM.onResponse = function onResponse(response, cb, errCb, xhr) {
             errCb("error during parsing xml:" + err)
         }
     }
+
     if (jsonResponse) {
         cb(jsonResponse, xhr);
     }
@@ -51,6 +54,10 @@ ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
                     location.hash = '/login';
                 }
             }
+        },
+        dataFilter: function(data, type) {
+            // fix #75 Remove PCDATA invalid chars before parsing
+            return data.replace(ALM.XML_UNICODE_REGEX,' ');
         },
         xhrFields: {
             withCredentials: true
@@ -190,7 +197,6 @@ ALM.getProjectHistory = function(time, callback) {
                 }
             }
             history.Audit[i].Verb = ALM.AUDIT_VERBS[history.Audit[i].Action];
-            console.log(history.Audit[i].Verb);
         }
 
         callback(null, history);

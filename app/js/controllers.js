@@ -243,7 +243,9 @@ openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams'
         $scope.getHistory = function() {
             var time = moment().startOf('week').format('YYYY-MM-DD');
             ALM.getProjectHistory(time, function(err, history) {
-                console.log(history);
+                if (err)
+                    console.log(err);
+
                 $scope.news = history.Audit;
                 $scope.$apply();
             });
@@ -344,8 +346,6 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                     // When the search param is not set
                     if (values === undefined || values === null)
                         continue;
-
-                    console.log(param, values)
 
                     // Make single values as arrays
                     if (typeof(values) == 'string')
