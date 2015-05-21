@@ -25,11 +25,13 @@
                 ng-disabled="disabled"
                 reset-search-input="false"
                 style="width: 300px;">
-            <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
+            <ui-select-match placeholder="User...">
+                <img class="select-match-image" ng-src="{{$select.selected.gravatar}}">{{$select.selected.fullname}}
+            </ui-select-match>
             <ui-select-choices repeat="user.id as user in users | filter: $select.search">
                 <div class="media">
                   <div class="media-left">
-                      <img class="media-object" ng-src="{{user.gravatar}}&s=32">
+                      <img class="media-object select-choice-image" ng-src="{{user.gravatar}}">
                   </div>
                   <div class="media-body">
                     <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id"></h4>

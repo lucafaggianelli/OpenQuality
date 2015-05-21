@@ -1,3 +1,8 @@
+input:focus,
+a:focus {
+    outline:none;
+}
+
 body {
     font-size:16px;
     padding-top:70px;
@@ -23,6 +28,17 @@ body {
 #nav-user-dropdown .dropdown-toggle {
     padding-top:9px;
     padding-bottom:9px;
+}
+
+.select-choice-image {
+    width:32px;
+    height:32px;
+}
+
+.select-match-image {
+    width:20px;
+    height:20px;
+    margin-right:6px;
 }
 
 table#defect-list th {
@@ -87,6 +103,10 @@ table#defect-list th.sortable {
 .defect-list-owner img.media-object {
     height:32px;
     width:32px;
+}
+
+.defect-list-unassigned {
+    color:#999;
 }
 
 .defect-list-lastmodified {

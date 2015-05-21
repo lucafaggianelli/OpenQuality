@@ -74,11 +74,13 @@
 
                     <ui-select ng-model="searchFilters.query.owner" ng-disabled="disabled"
                             reset-search-input="false" on-select="">
-                        <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
+                        <ui-select-match placeholder="User...">
+                            <img class="select-match-image" ng-src="{{$select.selected.gravatar}}">{{$select.selected.fullname}}
+                        </ui-select-match>
                         <ui-select-choices repeat="user.id as user in Users.usersArr | filter: $select.search">
                             <div class="media">
                               <div class="media-left">
-                                  <img class="media-object" ng-src="{{user.gravatar}}&s=32">
+                                  <img class="media-object select-choice-image" ng-src="{{user.gravatar}}">
                               </div>
                               <div class="media-body">
                                 <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id"></h4>
@@ -164,14 +166,15 @@
             <td><span class="{{getPriorityIcon(defect.priority)}}" aria-hidden="true"></span> {{defect.priority | cleanField}}</td>
             <td><span class="{{getSeverityIcon(defect.severity)}}" aria-hidden="true"></span> {{defect.severity | cleanField}}</td>
             <td class="defect-list-owner">
-                <div class="media">
+                <div class="media" ng-show="defect.owner">
                   <div class="media-left media-middle">
-                      <img class="media-object" ng-src="{{Users.getUser(defect.owner).gravatar}}&s=32">
+                      <img class="media-object" ng-src="{{Users.getUser(defect.owner).gravatar}}">
                   </div>
                   <div class="media-body">
                       <h4 class="media-heading">{{Users.getName(defect.owner)}}</h4>
                   </div>
                 </div>
+                <span class="defect-list-unassigned" ng-show="!defect.owner">Not assigned</span>
             </td>
             <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
             <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>

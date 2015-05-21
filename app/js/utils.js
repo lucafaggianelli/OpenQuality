@@ -26,3 +26,7 @@ Utils.obj2arr = function(obj) {
     });
     return arr;
 }
+
+Utils.defectLinksAnchors = function(text, baseUrl) {
+    return text.replace(/(\W+)#(\d+)(\W+)/,'$1<a href="'+baseUrl+'$2">#$2</a>$3')
+}

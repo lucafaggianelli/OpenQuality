@@ -28,7 +28,7 @@
             > <b>{{defect["creation-time"]}}</b> by <span class="glyphicon glyphicon-user" aria-hidden="true"></span
             > <b>{{Users.getName(defect['detected-by'])}}</b>
         </p>
-        
+
         <p>Affetcted terminal <span class="glyphicon glyphicon-phone" aria-hidden="true"></span> <b>{{defect['user-01']}}</b></p>
         
         <div class="form-inline">
@@ -69,11 +69,13 @@
 
                 <ui-select class="" ng-model="defect.owner" ng-disabled="disabled"
                         reset-search-input="false" on-select="updateField('owner')">
-                    <ui-select-match placeholder="User...">{{$select.selected.fullname}}</ui-select-match>
+                    <ui-select-match placeholder="User...">
+                        <img class="select-match-image" ng-src="{{$select.selected.gravatar}}">{{$select.selected.fullname}}
+                    </ui-select-match>
                     <ui-select-choices repeat="user.id as user in Users.usersArr | filter: $select.search">
                         <div class="media">
                           <div class="media-left">
-                              <img class="media-object" ng-src="{{user.gravatar}}&s=32">
+                              <img class="media-object select-choice-image" ng-src="{{user.gravatar}}">
                           </div>
                           <div class="media-body">
                             <h4 class="media-heading" ng-bind-html="(user.fullname | highlight: $select.search) || user.id"></h4>
