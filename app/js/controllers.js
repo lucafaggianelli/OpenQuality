@@ -495,7 +495,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
             });
         };
 
-        $scope.addComment = function() {
+        $scope.addComment = function(content) {
             ALM.getDefects(function(defect, count) {
                 if (count == 1) {
                     defect = defect[0];
@@ -507,7 +507,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 var newComment = {
                     user: ALMx.getUser(ALM.getLoggedInUser()).fullname,
                     date: moment().format('YYYY/MM/DD HH:mm:ss')+':',
-                    content: $scope.newComment.replace(/<[^>]+>/gm, '')
+                    content: content.replace(/<[^>]+>/gm, '')
                 };
                 var html = '';
                 var firstComment = !defect['dev-comments'];
@@ -531,7 +531,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
                 // Body
                 //html += '<div align="left"><font face="Arial"><span style="font-size:9pt">';
-                html += $scope.newComment;
+                html += content;
                 //html += '</span></font></div>';
 
                 // If first comment, need </html>
@@ -545,14 +545,19 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                         defect['dev-comments'].substr(pos);
                 }
 
-                ALM.saveDefect(function() {
-                        $scope.$emit('alert', {type: 'success', body: 'Successfully commented defect!'});
-                        $scope.defect.comments.unshift(newComment);
-                        $scope.$apply();
-                    }, function() {
+                $scope.defect['dev-comments'] = html;
+
+                ALM.updateField($scope.defect, 'dev-comments', function(err) {
+                    if (err) {
                         $scope.$emit('alert', {type: 'danger', body: 'Can\'t comment the defect!'});
-                    }, {id: $scope.defect.id, 'dev-comments': html},
-                    $scope.defect);
+                        return;
+                    }
+
+                    $scope.$emit('alert', {type: 'success', body: 'Successfully commented defect!'});
+                    $scope.defect.comments.unshift(newComment);
+                    $scope.$apply();
+                });
+
             }, function() {
                 $scope.$emit('alert', {type: 'danger', body: 'Can\'t comment the defect!'});
                 console.log('error');
