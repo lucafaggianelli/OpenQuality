@@ -48,8 +48,10 @@
     </div>
 
     <div class="form-group" ng-show="defect.status == 'Fixed'">
-        <label class="box-label">Fixed in build</label>
-        <input class="form-control" ng-model="defect['user-46']" />
+        <label class="box-label">{{fields['user-09'].Label}}</label>
+        <select name="user-09" class="form-control" ng-model="defect['user-09']"
+                ng-options="value for value in fields['user-09'].Values">
+        </select>
     </div>
 
     <div class="form-group">
@@ -59,6 +61,13 @@
         </select>
     </div>
 
+    <div class="form-group">
+        <label class="control-label">{{fields.priority.Label}}</label>
+        <select name="status" class="form-control" ng-model="defect.priority"
+                ng-options="value for value in fields.priority.Values">
+        </select>
+    </div>
+    
     <div class="form-group">
         <label class="control-label">{{ fields['user-01'].Label }}</label>
         <select name="severity" class="form-control" ng-model="defect['user-01']"

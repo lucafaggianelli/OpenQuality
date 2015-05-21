@@ -661,13 +661,13 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'A
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
         $scope.newDefect = true;
+
+        // Default value for defects
         $scope.defect = {
             status: 'New',
             severity: '3-Minor functional',
+            priority: '2-Medium',
         };
-
-        $scope.users = Utils.obj2arr(ALMx.users);
-        $scope.fields = ALMx.fields;
 
         $scope.createDefect = function(defect) {
             // Surround with HTML and BODY tags
@@ -693,6 +693,11 @@ openQualityControllers.controller('DefectNewCtrl', ['$scope', '$routeParams', 'A
                 location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+result[0].id;
             });
         }
+
+        ALMx.update($scope.domain, $scope.project, function() {
+            $scope.users = Utils.obj2arr(ALMx.users);
+            $scope.fields = ALMx.fields;
+        });
     }]);
 
 /**
