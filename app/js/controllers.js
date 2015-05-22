@@ -281,7 +281,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.project = $routeParams.project;
         $scope.loggedInUser = ALM.getLoggedInUser();
         $scope.gotoDefect = null;
-        $scope.pageSize = 50;
+        $scope.pageSize = 100;
         $scope.currentPage = 1;
 
         var fields = [
@@ -360,16 +360,23 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             ALM.getDefects(
                 function onSuccess(defects, totalCount) {
                     $scope.totalPages = new Array(Math.ceil(totalCount / $scope.pageSize));
-                    $scope.defects = defects;
 
-                    // Status table row class
-                    for (var i in $scope.defects) {
-                        if ($scope.defects[i].status) {
-                            $scope.defects[i].statusClass = STATUS_CLASSES[$scope.defects[i].status] || '';
+                    // Rework defects
+                    var defect;
+                    for (var i in defects) {
+                        defect = defects[i];
+
+                        defects[i].id = parseInt(defect.id)
+
+                        // Status table row class
+                        if (defect.status) {
+                            defects[i].statusClass = STATUS_CLASSES[defect.status] || '';
                         }
                     }
 
+                    $scope.defects = defects;
                     $scope.$apply();
+
                     if (!$scope.filteredDefects)
                         ALMx.lastSearch = [];
                     else
@@ -422,9 +429,9 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         });
 
         ALMx.update($scope.domain, $scope.project, function() {
-            console.log('project update is ready');
             $scope.Users = ALMx;
             $scope.fields = ALMx.fields;
+            $scope.loggedInUser = ALM.getLoggedInUser();
 
             $scope.getDefects();
         });
@@ -506,7 +513,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
 
                 var newComment = {
                     user: ALMx.getUser(ALM.getLoggedInUser()).fullname,
-                    date: moment().format('YYYY/MM/DD HH:mm:ss')+':',
+                    date: moment().format('YYYY/MM/DD HH:mm:ss'),
                     content: content.replace(/<[^>]+>/gm, '')
                 };
                 var html = '';
@@ -526,7 +533,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 html += '<font face="Arial" color="#000080" size="1"><span style="font-size:8pt"><b>';
                 html += newComment.user;
                 html += ' &lt;'+ALM.getLoggedInUser()+'&gt;, ';
-                html += newComment.date;
+                html += newComment.date+':';
                 html += '</b></span></font></div>';
 
                 // Body
@@ -554,7 +561,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     }
 
                     $scope.$emit('alert', {type: 'success', body: 'Successfully commented defect!'});
-                    $scope.defect.comments.unshift(newComment);
+                    $scope.defect.comments.push(newComment);
                     $scope.$apply();
                 });
 
@@ -602,7 +609,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                                     date: null,
                                     content: comment };
                         });
-                        $scope.defect.comments.reverse();
+                        // show comments in original QC order
+                        //$scope.defect.comments.reverse();
                     }
 
                     // Severity icon

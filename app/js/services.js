@@ -103,7 +103,7 @@ openQualityServices.service('Notifications', function($rootScope, $filter, ALMx)
             //   Luca Faggianelli + 3 others
             title = users[0].fullname;
             if (users.length > 1) {
-                title += ' + ' + (users.length-1) + 'others';
+                title += ' + ' + (users.length-1) + ' other';
                 // Pluralize 'other(s)'
                 if (users.length > 2)
                     title += 's';
@@ -124,30 +124,10 @@ openQualityServices.service('Notifications', function($rootScope, $filter, ALMx)
     
             $rootScope.$broadcast('updateDefectList');
 
-            // TODO issue #54
             notification = new Notification(title, {body: body});//, icon: icon});
             notification.onclick = function(event) {
                 console.log('got clicked',event);
             };
-
-            // TODO bug #45
-            /*
-            var property;
-            var user;
-            if (history.Audit.length > 0) {
-                audit = history.Audit[0]; // TODO i
-
-                user = Users.getUser(audit.User);
-
-                if (!audit.Properties || audit.Properties == "") {
-                    body = 'Updated defect #' + audit.ParentId;
-                } else {
-                    property = (audit.Properties.Property || audit.Properties[0].Property).Label;
-                    body = (DICT[property] || 'Updated '+property+' on') + ' defect #' + audit.ParentId;
-                }
-
-                console.log('notify', user.fullname, body, user.gravatar+'&s=60');
-            }*/
 
         });
     }
