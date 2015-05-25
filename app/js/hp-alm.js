@@ -127,25 +127,41 @@ function convertFields(entities) {
 }
 
 function convertFieldsBack(entity, type) {
-    var start = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>' +
-        '<Entity Type="' + type + '">' + '<Fields>',
-        middle = '',
-        end = '</Fields></Entity>';
+    var xml = '';
 
-    for (var fieldName in entity) {
-        var values = entity[fieldName];
-        middle += '<Field Name="' + fieldName + '">';
-        if (typeof(values) === 'string') {
-            values = [values];
+    if (type == 'defect') {
+
+        var start = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>' +
+            '<Entity Type="' + type + '">' + '<Fields>',
+            middle = '',
+            end = '</Fields></Entity>';
+
+        for (var fieldName in entity) {
+            var values = entity[fieldName];
+            middle += '<Field Name="' + fieldName + '">';
+            if (typeof(values) === 'string') {
+                values = [values];
+            }
+
+            for (var i in values) {
+                middle += '<Value>'+escapeXml(values[i])+'</Value>';
+            }
+            middle += '</Field>';
         }
 
-        for (var i in values) {
-            middle += '<Value>'+escapeXml(values[i])+'</Value>';
-        }
-        middle += '</Field>';
+        xml = start + middle + end;
+
+    } else if (type == 'defect-link') {
+        xml = '<defect-link>';
+        if (entity.comment)
+            xml += '<comment>'+entity.comment+'</comment>';
+        xml += '<first-endpoint-id>'+entity['first-endpoint-id']+'</first-endpoint-id>';
+        xml += '<second-endpoint-id>'+entity['second-endpoint-id']+'</second-endpoint-id>';
+        xml += '<second-endpoint-type>defect</second-endpoint-type>'
+        xml += '</defect-link>';
     }
 
-    return start + middle + end;
+    return xml;
 }
 
   function escapeXml (s) {
@@ -312,13 +328,36 @@ ALM.getLinks = function(id, callback) {
             "/defects/" + id + '/defect-links';
 
     ALM.ajax(url, function(links) {
+        links = links.defect_link;
+
         if (links.length == undefined)
             links = [links];
 
-        callback(null, links.map(function(x){ return x.defect_link; }));
+        callback(null, links);
     }, function(err) {
         callback('cant get links');
     });
+}
+
+ALM.createDefectLink = function(link, callback) {
+      
+    var url = "rest/domains/" + DOMAIN +
+            "/projects/" + PROJECT +
+            "/defects/" + link['first-endpoint-id'] + '/defect-links';
+    
+    var xml = convertFieldsBack(link, 'defect-link');
+
+    ALM.ajax(url,
+        function(link) {
+            console.log(link)
+            callback(null, link);
+        },
+        function(err) {
+            callback(err)
+        },
+        'POST',
+        xml,
+        'application/xml');
 }
 
 ALM.getDefects = function getDefects(cb, errCb, query, fields, pageSize, startIndex) {

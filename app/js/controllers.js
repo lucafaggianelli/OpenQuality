@@ -450,6 +450,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         $scope.getFileSizeString = Utils.getFileSizeString;
         $scope.toolbar = TEXTANGULAR_TOOLBAR;
 
+        $scope.newLink = {};
+
         $(function () {
             scrollTo(0,0);
             $('[data-toggle="tooltip"]').tooltip()
@@ -501,6 +503,23 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 console.log(err, data);
             });
         };
+
+        $scope.addLink = function() {
+            $scope.newLink['first-endpoint-id'] = $scope.defect.id;
+
+            console.log($scope.newLink)
+            ALM.createDefectLink($scope.newLink, function(err,link) {
+                if (err) {
+                    $scope.$emit('alert', {type: 'danger', body: 'Can\'t create link!'});
+                    return;
+                } else {
+                    $scope.$emit('alert', {type: 'success', body: 'Link successfully created!'});
+                }
+                console.log(link);
+                $scope.defect.links.push(link);
+                $scope.$apply();
+            });
+        }
 
         $scope.addComment = function(content) {
             ALM.getDefects(function(defect, count) {
@@ -589,6 +608,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 if (totalCount == 1) {
                     originalDefect = defects[0];
                     $scope.defect = defects[0];
+                    $scope.defect.links = [];
+                    $scope.defect.comments = [];
     
                     // Comments - prettify
                     if ($scope.defect['dev-comments']) {
@@ -600,8 +621,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                             tmp = comment.split(/(.+)\s+&lt;.*&gt;,\s+([0-9\/]+\s*[0-9:]*)\s*:/);
                             if (tmp && tmp.length == 4)
                                 return {
-                                    user: Utils.html2txt(tmp[1]),
-                                    date: tmp[2],
+                                    user: Utils.html2txt(tmp[1]).replace(/&nbsp;/g, ''),
+                                    date: tmp[2].replace(/&nbsp;/g, ''),
                                     content: tmp[3] };
                             else
                                 return {
@@ -609,6 +630,10 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                                     date: null,
                                     content: comment };
                         });
+                        
+                        if (!$scope.defect.comments)
+                            $scope.defect.comments = [];
+
                         // show comments in original QC order
                         //$scope.defect.comments.reverse();
                     }
@@ -627,6 +652,8 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                 ALM.getLinks($scope.defect.id, function(err, links) {
                     if (err)
                         return;
+
+                    console.log(links);
 
                     $scope.defect.links = links;
                     $scope.$apply();
@@ -746,6 +773,6 @@ var STATUS_CLASSES = {
 var DESCRIPTION_HTML_START = '<html><body>';
 var DESCRIPTION_HTML_END = '</body></html>';
 
-var COMMENT_HTML_START = '<html><body><div align="left"><font face="Arial"><span style="font-size:9pt">&nbsp;&nbsp;</span></font></div>';
-var COMMENT_HTML_END = '<div align="left">&nbsp;&nbsp;</div></body></html>';
+var COMMENT_HTML_START = '<html><body>';
+var COMMENT_HTML_END = '</body></html>';
 var COMMENT_DIVIDER = '<font face="Arial"><span style="font-size:9pt"><br /></span></font><font face="Arial" color="#000080"><span style="font-size:9pt"><b>________________________________________</b></span></font><font face="Arial"><span style="font-size:9pt"><br /></span></font>';
