@@ -40,6 +40,11 @@ ALM.onResponse = function onResponse(response, cb, errCb, xhr) {
 }
 
 ALM.ajax = function ajax(path, onSuccess, onError, type, data, contentType) {
+    if (!API_URL) {
+        throw 'ALM REST API URL is not set';
+        onError();
+    }
+
     $.ajax(API_URL + path, {
         success: function (response, status, jqXHR) {
             ALM.onResponse(response, onSuccess, onError, jqXHR);

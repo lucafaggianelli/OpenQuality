@@ -1,6 +1,7 @@
 'use strict';
 
 var manifest = require('../package.json');
+var gui = require('nw.gui');
 
 // App version
 var VERSION = manifest.version;
@@ -132,7 +133,7 @@ openQualityControllers.controller('MainCtrl', ['$scope', '$routeParams', 'ALMx',
             if (lastProject) {
                 lastProject = lastProject.split('.');
                 console.log('Your last project is '+lastProject);
-                location.hash = '/'+lastProject[0]+'/projects/'+lastProject[1]+'/defects';
+                location.hash = '/'+lastProject[0]+'/projects/'+lastProject[1];
             }
         }
 
@@ -208,9 +209,25 @@ openQualityControllers.controller('SettingsCtrl', ['$scope', 'Settings',
         $scope.settings = Settings.settings;
 
         $scope.saveSettings = function(settings) {
-            console.log('saving', settings)
+            // Need trailing slash
+            if (settings.serverAddress.substr(-1) != '/')
+                settings.serverAddress += '/';
+
             Settings.save(settings);
             ALM.setServerAddress(Settings.settings.serverAddress);
+
+            if ($scope.settingsForm.username.$dirty ||
+                $scope.settingsForm.password.$dirty ||
+                $scope.settingsForm.serverAddress.$dirty) {
+                ALM.login(settings.username, settings.password,
+                    function() {
+                        $scope.settingsForm.$setPristine();
+                        $scope.$emit('loggedIn', settings.username);
+                        $scope.$emit('alert', {type:'success',body:'Logged in as '+settings.username});
+                    }, function() {
+                        $scope.settingsForm.$setPristine();
+                    });
+            }
         }
     }]);
 
@@ -643,6 +660,13 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     $scope.defect.priorityIcon = ALMx.getDefectPriorityIcon($scope.defect.priority);
 
                     $scope.$apply();
+
+                    $('.defect-detail-description a, .defect-detail-comments a').click(function(event) {
+                        if (event.target.href && event.target.href.match(/https*:\/\//)) {
+                            gui.Shell.openExternal(event.target.href);
+                            return false;
+                        }
+                    });
                 } else {
                     $scope.defectNotFound = true;
                     $scope.$apply();
