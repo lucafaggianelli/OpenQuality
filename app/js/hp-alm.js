@@ -86,6 +86,7 @@ ALM.setCurrentProject = function(dom, prj) {
 ALM.login = function (username, password, onSuccess, onError) {
     ALM.ajax('authentication-point/j_spring_security_check', 
         function(res) {
+            console.log('logged in', username)
             loggedInUser = username;
             onSuccess();
         }, function() {
@@ -102,6 +103,7 @@ ALM.login = function (username, password, onSuccess, onError) {
 ALM.tryLogin = function tryLogin(onLogin, onError) {
     ALM.ajax("rest/is-authenticated",
     function(response) {
+        console.log('try logged in', response)
         loggedInUser = response.Username;
         onLogin(response.Username);
     },

@@ -316,27 +316,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
 
         $scope.searchFilters = JSON.parse(localStorage.getItem('filters.search'));
         $scope.sortFilters = JSON.parse(localStorage.getItem('filters.sort'));
-
-        $scope.updateSortButtons = function() {
-            angular.forEach($scope.sortButtons, function(value, key) {
-                if (key == $scope.sortFilters.param) {
-                    $scope.sortButtons[key].btn = 'btn-primary';
-                    $scope.sortButtons[key].icon = $scope.sortFilters.reverse ? 
-                        'glyphicon-sort-by-attributes-alt':'glyphicon-sort-by-attributes';
-                } else {
-                    $scope.sortButtons[key].btn = 'btn-default';
-                    $scope.sortButtons[key].icon = 'glyphicon-sort-by-attributes';
-                }
-            });
-        }
-
-        $scope.sortButtons = {
-            'id': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
-            'last-modified': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
-            'severity': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
-            'priority': {btn:'btn-default',icon:'glyphicon-sort-by-attributes-alt'},
-        };
-        $scope.updateSortButtons();
+        $scope.searchFiltersOwnerOld = $scope.searchFilters.query.owner;
 
         $scope.sort = function(param) {
             // If press again the sort button, reverse the order
@@ -346,8 +326,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                 $scope.sortFilters.param = param;
                 $scope.sortFilters.predicate = '"'+param+'"';
             }
-            $scope.searchForm.$setDirty();
-            $scope.updateSortButtons();
+            $scope.saveFilters();
         };
 
         $scope.getSeverityIcon = ALMx.getDefectSeverityIcon;
@@ -415,10 +394,16 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             $scope.getDefects();
         };
 
+        $scope.$watch('searchFilters.query.owner', function() {
+            if ($scope.searchFiltersOwnerOld != $scope.searchFilters.query.owner) {
+                console.log('owner changed');
+                $scope.searchForm.$setDirty();
+            }
+        });
+
         $scope.resetSearchFilters = function() {
             $scope.searchFilters = JSON.parse(localStorage.getItem('filters.search'));
             $scope.sortFilters = JSON.parse(localStorage.getItem('filters.sort'));
-            $scope.updateSortButtons();
             $scope.searchForm.$setPristine();
 
             $scope.getDefects();
@@ -464,6 +449,7 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
             $scope.Users = ALMx;
             $scope.fields = ALMx.fields;
             $scope.loggedInUser = ALM.getLoggedInUser();
+            console.log('logged in as',$scope.loggedInUser)
 
             $scope.getDefects();
         });

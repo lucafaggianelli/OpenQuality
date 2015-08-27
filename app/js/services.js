@@ -174,6 +174,7 @@ openQualityServices.service('ALMx', function($rootScope) {
 
             if (this.domain != null && this.project != null) {
                 async.series([
+                    this.login,
                     this.updateUsers,
                     this.updateFields
                 ], function(err) {
@@ -185,6 +186,22 @@ openQualityServices.service('ALMx', function($rootScope) {
         } else {
             callback();
         }
+    }
+
+    this.login = function(callback) {
+        if (ALM.getLoggedInUser()) {
+            callback(null);
+            return;
+        }
+
+        ALM.tryLogin(
+            function(username) {
+                callback(null);
+            },
+            function(error) {
+                callback('cant login');
+            }
+        );
     }
 
     this.updateUsers = function(callback) {
