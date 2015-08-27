@@ -5,6 +5,7 @@
 var openQualityApp = angular.module('openQualityApp', [
     'ngRoute',
     'ui.select',
+    'ui.bootstrap',
     'ngSanitize',
     'textAngular',
     'angularMoment',
