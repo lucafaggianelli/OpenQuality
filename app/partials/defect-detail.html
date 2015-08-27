@@ -131,7 +131,7 @@
         <a class="list-group-item" ng-repeat="attachment in defect.attachments" ng-href="{{attachment.url}}" download>
             <p><span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{attachment.name}} ({{getFileSizeString(attachment['file-size'])}} - {{attachment['last-modified']}})</p>
             <p ng-if="attachment.description" ta-bind ng-model="attachment.description"></p>
-            <p class="thumbnail" ng-if="isImg(attachment.name)"><img ng-src="{{attachment.url}}"/></p>
+            <p class="thumbnail" ng-if="isImg(attachment.name)"><img class="attachment" ng-src="{{attachment.url}}"/></p>
         </a>
     </div>
 </div>

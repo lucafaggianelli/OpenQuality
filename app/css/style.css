@@ -159,6 +159,11 @@ table#defect-list th.sortable {
     content:"More \2193";
 }
 
+img.attachment {
+    max-width:300px;
+    max-height:300px;
+}
+
 .ta-toolbar {
     margin-bottom:5px;
 }
