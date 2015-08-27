@@ -99,6 +99,7 @@ table#defect-list th.sortable {
 
 #defect-detail-title {
     margin-top:0;
+    margin-left:10px;
 }
 
 .defect-list-item {
@@ -120,6 +121,20 @@ table#defect-list th.sortable {
 
 .defect-detail-description {
     margin:0 10px 15px 10px;
+}
+.defect-detail-description.less {
+    height:100px;
+    border-bottom:1px dashed #808080;
+    overflow:hidden;
+}
+.description-show-more {
+    text-align:center;
+}
+.description-show-more::after {
+    content:"Less \2191";
+}
+.description-show-more.less::after {
+    content:"More \2193";
 }
 
 .ta-toolbar {

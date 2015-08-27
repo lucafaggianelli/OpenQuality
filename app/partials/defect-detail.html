@@ -1,11 +1,7 @@
 <div ng-if="defect">
-<div ng-if="lastSearch.length > 0 && defectIndex != -1" class="btn-group btn-group-justified" role="group">
+<div ng-if="false && lastSearch.length > 0 && defectIndex != -1" class="btn-group btn-group-justified" role="group">
     <div class="btn-group" role="group">
         <button type="button" class="btn btn-default" ng-click="gotoDefect(lastSearch[defectIndex-1])" ng-disabled="defectIndex <= 0">&laquo;<span ng-hide="defectIndex <= 0"> #{{lastSearch[defectIndex-1]}}</span></button>
-    </div>
-
-    <div class="btn-group" role="group">
-        <button type="button" class="btn btn-default" ng-click="backToSearch()" data-toggle="tooltip" data-placement="bottom" title="Back to search"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Defect {{defectIndex+1}} of {{lastSearch.length}}</button>
     </div>
 
     <div class="btn-group" role="group">
@@ -20,7 +16,10 @@
     </h1>
 </div>
 
-<div class="defect-detail-description" ta-bind ng-model="defect.description"></div>
+<div class="defect-detail-description" ng-class="{'less': !descrMore}"
+    ta-bind ng-model="defect.description"></div>
+<p class="description-show-more text-info" ng-class="{'less': !descrMore}"
+    ng-click="descrMore = !descrMore"></p>
 
 <div class="panel panel-default">
     <div class="panel-heading"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Info</div>
@@ -164,8 +163,9 @@
 
     <div class="list-group">
         <a ng-show="true" class="list-group-item list-group-item-info" href="" data-toggle="modal" data-target="#new-link-modal">
-<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a linked defect &hellip;</a>
-        <a href="" class="list-group-item" ng-repeat="link in defect.links" ng-click="gotoDefect(link.second_endpoint_id.text)">
+<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add a defect &hellip;</a>
+        <a href="" class="list-group-item" ng-repeat="link in defect.links | filter: { second_endpoint_type: 'defect' }"
+            ng-click="gotoDefect(link.second_endpoint_id.text)">
             <p style="margin:0;"><span class="glyphicon" aria-hidden="true"></span> <span class="text-info"><strong>#{{link.second_endpoint_id.text}}</span> {{link.second_endpoint_name}}</strong><small ng-show="link-comment"> ({{link.comment}})</small></p>
         </a>
     </div>

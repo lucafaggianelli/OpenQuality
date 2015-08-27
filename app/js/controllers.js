@@ -444,7 +444,6 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
               size: 'lg',
               resolve: {
                 defect_id: function () {
-                    console.log('ID ' + id);
                   return id;
                 }
               }
@@ -643,6 +642,7 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     $scope.defect = defects[0];
                     $scope.defect.links = [];
                     $scope.defect.comments = [];
+                    $scope.descrMore = true;
     
                     // Comments - prettify
                     if ($scope.defect['dev-comments']) {
@@ -674,15 +674,24 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
                     // Severity icon
                     $scope.defect.severityIcon = ALMx.getDefectSeverityIcon($scope.defect.severity);
                     $scope.defect.priorityIcon = ALMx.getDefectPriorityIcon($scope.defect.priority);
-
                     $scope.$apply();
 
+                    // Forward HTTP links to the OS
                     $('.defect-detail-description a, .defect-detail-comments a').click(function(event) {
                         if (event.target.href && event.target.href.match(/https*:\/\//)) {
                             gui.Shell.openExternal(event.target.href);
                             return false;
                         }
                     });
+                    
+                    if ($('.defect-detail-description')[0].offsetHeight <= 100) {
+                        $('.description-show-more').hide();
+                    } else {
+                        $('.description-show-more').addClass('less');
+                        $scope.descrMore = false;
+                    }
+                    
+                    $scope.$apply();
                 } else {
                     $scope.defectNotFound = true;
                     $scope.$apply();

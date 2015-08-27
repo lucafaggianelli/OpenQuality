@@ -13,6 +13,7 @@ var openQualityApp = angular.module('openQualityApp', [
     'openQualityControllers',
     'openQualityServices',
     'openQualityFilters',
+    'openQualityDirs',
 ]);
 
 openQualityApp.config(['$routeProvider',

@@ -1,11 +1,24 @@
 {
   "version": "0.1.6-preAlpha",
-  "private": true,
   "name": "OpenQuality",
-  "description": "Quality Center web app",
+  "description": "HP ALM Quality Center client",
+  "author": "Luca Faggianelli <luca.faggianelli@gmail.com>",
+  "homepage": "https://github.com/lucafaggianelli/OpenQuality",
   "repository": "https://github.com/lucafaggianelli/OpenQuality",
+  "bugs": {
+      "url": "https://github.com/lucafaggianelli/OpenQuality/issues"
+  },
   "license": "MIT",
+  "private": true,
+
+  "dependencies": {
+  },
+
   "devDependencies": {
+  },
+
+  "scripts": {
+    "start": "nw"
   },
 
   "main": "app/index.html",
