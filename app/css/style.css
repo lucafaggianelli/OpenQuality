@@ -97,6 +97,28 @@ table#defect-list th.sortable {
     border-top:none;
 }
 
+#quick-search {
+    border-right:none;
+            box-shadow:none;
+    -webkit-box-shadow:none;
+}
+
+#clear-search {
+    border-left:none;
+    background:none;
+    color:#808080;
+}
+#clear-search:hover {
+    border-color:#ccc;
+            box-shadow:none;
+    -webkit-box-shadow:none;
+}
+#clear-search:active {
+    border-color:#ccc;
+            box-shadow:none;
+    -webkit-box-shadow:none;
+}
+
 #defect-detail-title {
     margin-top:0;
     margin-left:10px;
