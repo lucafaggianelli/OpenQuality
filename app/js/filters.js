@@ -12,7 +12,7 @@ openQualityFilters.filter('hellip', function() {
             limit = 100;
 
         if (text && text.length > limit)
-            return text.substring(0,limit) + '<span class="text-info">&hellip; (more)</span>';
+            return text.substring(0,limit) + '<span class="text-info">&hellip;</span>';
         else
             return text;
     }
