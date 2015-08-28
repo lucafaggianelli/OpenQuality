@@ -12,7 +12,8 @@
 <div class="modal-body">
 <div id="defect-detail-title" class="page-header">
     <h1>
-        <span class="text-primary">#{{defect.id}}</span> {{defect.name}} <span class="glyphicon glyphicon-check icon-severity-3" ng-show="defect.status=='Fixed' || defect.status=='Closed'" aria-hidden="true"></span>
+        <span class="text-primary">#{{defect.id}}</span> {{defect.name}}
+        <span class="glyphicon glyphicon-check icon-severity-3" ng-show="defect.status=='Fixed' || defect.status=='Closed'" aria-hidden="true"></span>
     </h1>
 </div>
 
@@ -198,6 +199,9 @@
 
 </div>
 
-</div> <!-- If defect found -->
+</div> <!-- /If defect found -->
 
-<h1 ng-if="defectNotFound">Sorry, defect <span class="text-danger">#{{defect_id}}</span> doesn't exist!</h1>
+<!-- If defect not found -->
+<div class="modal-body">
+    <h1 ng-if="defectNotFound">Sorry, defect <span class="text-danger">#{{defect_id}}</span> doesn't exist!</h1>
+</div>

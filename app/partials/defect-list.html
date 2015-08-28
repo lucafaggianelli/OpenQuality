@@ -15,7 +15,7 @@
     </div>
 
     <div class="col-sm-2 form-group">
-        <form ng-submit="showDefect(gotoDefect)">
+        <form ng-submit="showDefect(gotoDefect);gotoDefect=null">
             <div class="input-group">
                 <span class="input-group-btn">
                     <button class="btn btn-primary" ng-disabled="!gotoDefect" type="button" ng-click="showDefect(gotoDefect)">Go to defect #</button>
