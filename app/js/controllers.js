@@ -246,8 +246,8 @@ openQualityControllers.controller('ProjectListCtrl', ['$scope',
             });
     }]);
 
-openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', 'ALMx',
-    function($scope, $routeParams, ALMx) {
+openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams', 'ALMx', '$modal',
+    function($scope, $routeParams, ALMx, $modal) {
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.news = [];
@@ -280,6 +280,20 @@ openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams'
                 $scope.$apply();
             }, function() {
             }, 'status[*]', ['id'],1,1);
+        };
+        
+        $scope.showDefect = function(id) {
+            var modalInstance = $modal.open({
+              animation: $scope.animationsEnabled,
+              templateUrl: 'partials/defect-detail.html',
+              controller: 'DefectDetailCtrl',
+              size: 'lg',
+              resolve: {
+                defect_id: function () {
+                  return id;
+                }
+              }
+            });
         };
 
         ALMx.update($scope.domain, $scope.project, function() {
@@ -418,10 +432,6 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         };
 
         $scope.showDefect = function(id) {
-            //location.hash = '/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+id;
-            //$scope.defectDetailsModal = true;
-            //$scope.$broadcast('showDefect', id);
-
             var modalInstance = $modal.open({
               animation: $scope.animationsEnabled,
               templateUrl: 'partials/defect-detail.html',
@@ -433,8 +443,8 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                 }
               }
             });
+        };
 
-          };
         window.onscroll = function() {
             var doc = document.documentElement;
             var left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
@@ -455,8 +465,8 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         });
     }]);
 
-openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'ALMx', 'defect_id',
-    function($scope, $routeParams, ALMx, defect_id) {
+openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams', 'ALMx', 'defect_id', '$modal',
+    function($scope, $routeParams, ALMx, defect_id, $modal) {
         var originalDefect = null;
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
@@ -712,7 +722,17 @@ openQualityControllers.controller('DefectDetailCtrl', ['$scope', '$routeParams',
         };
 
         $scope.gotoDefect = function(id) {
-            location.hash = '#/'+$scope.domain+'/projects/'+$scope.project+'/defects/'+id;
+            var modalInstance = $modal.open({
+              animation: $scope.animationsEnabled,
+              templateUrl: 'partials/defect-detail.html',
+              controller: 'DefectDetailCtrl',
+              size: 'lg',
+              resolve: {
+                defect_id: function () {
+                  return id;
+                }
+              }
+            });
         };
 
         $scope.$on('showDefect', function(event, id) {

@@ -47,10 +47,6 @@ openQualityApp.config(['$routeProvider',
             templateUrl: 'partials/defect-edit.html',
             controller: 'DefectNewCtrl'
         }).
-        when('/:domain/projects/:project/defects/:defect', {
-            templateUrl: 'partials/defect-detail.html',
-            controller: 'DefectDetailCtrl'
-        }).
         otherwise({
             redirectTo: '/'
         });

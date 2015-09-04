@@ -1,5 +1,5 @@
 {
-  "version": "0.1.6-preAlpha",
+  "version": "0.1.7",
   "name": "OpenQuality",
   "description": "HP ALM Quality Center client",
   "author": "Luca Faggianelli <luca.faggianelli@gmail.com>",
@@ -12,13 +12,14 @@
   "private": true,
 
   "dependencies": {
+      "nw": "0.12.x"
   },
 
   "devDependencies": {
   },
 
   "scripts": {
-    "start": "nw"
+    "start": "./node_modules/nw/bin/nw ."
   },
 
   "main": "app/index.html",
