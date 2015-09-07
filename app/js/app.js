@@ -9,6 +9,7 @@ var openQualityApp = angular.module('openQualityApp', [
     'ngSanitize',
     'textAngular',
     'angularMoment',
+    'infinite-scroll',
 
     'openQualityControllers',
     'openQualityServices',

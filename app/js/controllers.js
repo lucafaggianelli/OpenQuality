@@ -308,13 +308,13 @@ openQualityControllers.controller('ProjectDetailCtrl', ['$scope', '$routeParams'
 
 openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', 'ALMx', '$modal',
     function($scope, $routeParams, ALMx, $modal) {
+        var DEFECTS_PAGE_SIZE = 100;
         $scope.domain = $routeParams.domain;
         $scope.project = $routeParams.project;
         $scope.loggedInUser = ALM.getLoggedInUser();
         $scope.gotoDefect = null;
-        $scope.pageSize = 100;
-        $scope.currentPage = 1;
         $scope.defectDetailsModal = false;
+        $scope.defectsLimit = 20;
 
         var fields = [
                 "id",
@@ -346,6 +346,10 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
         $scope.getSeverityIcon = ALMx.getDefectSeverityIcon;
         $scope.getPriorityIcon = ALMx.getDefectPriorityIcon;
 
+        $scope.loadMore = function() {
+            $scope.defectsLimit += 1;
+        }
+
         $scope.getDefects = function() {
             var queryString = '';
 
@@ -368,44 +372,54 @@ openQualityControllers.controller('DefectListCtrl', ['$scope', '$routeParams', '
                 }
             }
 
-            ALM.getDefects(
-                function onSuccess(defects, totalCount) {
-                    $scope.totalPages = new Array(Math.ceil(totalCount / $scope.pageSize));
+            $scope.defects = [];
+            var totalPages = 1;
+            var currentPage = 0;
+            $scope.defectsLimit = 20;
 
-                    // Rework defects
-                    var defect;
-                    for (var i in defects) {
-                        defect = defects[i];
+            async.doWhilst(function(next) {
+                ALM.getDefects(
+                    function onSuccess(defects, totalCount) {
+                        totalPages = Math.ceil(totalCount / DEFECTS_PAGE_SIZE);
 
-                        defects[i].id = parseInt(defect.id)
+                        // Rework defects
+                        var defect;
+                        for (var i in defects) {
+                            defect = defects[i];
 
-                        // Status table row class
-                        if (defect.status) {
-                            defects[i].statusClass = STATUS_CLASSES[defect.status] || '';
+                            defects[i].id = parseInt(defect.id)
+
+                            // Status table row class
+                            if (defect.status) {
+                                defects[i].statusClass = STATUS_CLASSES[defect.status] || '';
+                            }
                         }
-                    }
 
-                    $scope.defects = defects;
-                    $scope.$apply();
+                        $scope.defects.push.apply($scope.defects, defects);
+                        $scope.$apply();
 
-                    if (!$scope.filteredDefects)
+                        if (!$scope.filteredDefects)
+                            ALMx.lastSearch = [];
+                        else
+                            ALMx.lastSearch = $scope.filteredDefects.map(function(d){ return d.id; });
+
+                        next(null,null);
+                    },
+                    function onError() {
+                        console.log('error getting defects');
                         ALMx.lastSearch = [];
-                    else
-                        ALMx.lastSearch = $scope.filteredDefects.map(function(d){ return d.id; });
-                },
-                function onError() {
-                    console.log('error getting defects');
-                    ALMx.lastSearch = [];
-                    $scope.$apply();
-                },
-                queryString, fields, $scope.pageSize, ($scope.currentPage-1) * $scope.pageSize + 1);
-        };
-
-        $scope.setPage = function(page) {
-            if (page <= 0 || page > $scope.totalPages.length)
-                return;
-            $scope.currentPage = page;
-            $scope.getDefects();
+                        $scope.$apply();
+                        next('err',null);
+                    },
+                    queryString, fields, DEFECTS_PAGE_SIZE, currentPage * DEFECTS_PAGE_SIZE + 1);
+            }, function() {
+                // doWhilst test()
+                currentPage++;
+                return currentPage < totalPages;
+            }, function(err, res) {
+                // doWhilst done()
+                console.log('Fetched all defects');
+            });
         };
 
         $scope.$watch('searchFilters.query.owner', function() {

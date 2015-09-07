@@ -126,65 +126,51 @@
     </div>
 </div>
 
-<table id="defect-list" ng-show="defects" data-provides="rowlink" class="table table-hover">
-    <thead>
-        <tr>
-            <th class="sortable" ng-click="sort('id')">#<span ng-show="sortFilters.param=='id'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
-            <th>Description</th>
-            <th>Status</th>
-            <th class="sortable" ng-click="sort('priority')">Priority<span ng-show="sortFilters.param=='priority'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
-            <th class="sortable" ng-click="sort('severity')">Severity<span ng-show="sortFilters.param=='severity'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
-            <th>Assigned To</th>
-            <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
-            <th><span class="glyphicon glyphicon-comment" aria-hidden="true"></span></th>
-            <th class="sortable" ng-click="sort('last-modified')"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span><span ng-show="sortFilters.param=='last-modified'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
-        </tr>
-    </thead>
+<div infinite-scroll='loadMore()' infinite-scroll-distance='1'>
+    <table id="defect-list" ng-show="defects" data-provides="rowlink" class="table table-hover">
+        <thead>
+            <tr>
+                <th class="sortable" ng-click="sort('id')">#<span ng-show="sortFilters.param=='id'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
+                <th>Description</th>
+                <th>Status</th>
+                <th class="sortable" ng-click="sort('priority')">Priority<span ng-show="sortFilters.param=='priority'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
+                <th class="sortable" ng-click="sort('severity')">Severity<span ng-show="sortFilters.param=='severity'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
+                <th>Assigned To</th>
+                <th><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></th>
+                <th><span class="glyphicon glyphicon-comment" aria-hidden="true"></span></th>
+                <th class="sortable" ng-click="sort('last-modified')"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span><span ng-show="sortFilters.param=='last-modified'"> {{sortFilters.reverse?'&darr;':'&uarr;'}}</span></th>
+            </tr>
+        </thead>
 
-    <tbody>
-        <tr class="defect-list-item"
-            ng-repeat="defect in filteredDefects = (defects | filter: searchText | orderBy:sortFilters.predicate:sortFilters.reverse)"
-            ng-click="showDefect(defect.id)">
-            <td>{{defect.id}}</td>
-            <td>
-                <p><b>{{defect.name}}</b></p>
-                <p ng-bind-html="defect.description | html2text | hellip: 100"></p>
-            </td>
-            <td ng-class="defect.statusClass">{{defect.status}}</td>
-            <td><span class="{{getPriorityIcon(defect.priority)}}" aria-hidden="true"></span> {{defect.priority | cleanField}}</td>
-            <td><span class="{{getSeverityIcon(defect.severity)}}" aria-hidden="true"></span> {{defect.severity | cleanField}}</td>
-            <td class="defect-list-owner">
-                <div class="media" ng-show="defect.owner">
-                  <div class="media-left media-middle">
-                      <img class="media-object" ng-src="{{Users.getUser(defect.owner).gravatar}}">
-                  </div>
-                  <div class="media-body">
-                      <h4 class="media-heading">{{Users.getName(defect.owner)}}</h4>
-                  </div>
-                </div>
-                <span class="defect-list-unassigned" ng-show="!defect.owner">Not assigned</span>
-            </td>
-            <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
-            <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>
-            <td class="defect-list-lastmodified" title="{{defect['last-modified']}}"><span am-time-ago="defect['last-modified']"></span></td>
-        </tr>
-    </tbody>
-</table>
+        <tbody>
+            <tr class="defect-list-item"
+                ng-repeat="defect in filteredDefects = (defects | filter: searchText | orderBy:sortFilters.predicate:sortFilters.reverse | limitTo: defectsLimit) track by defect.id"
+                ng-click="showDefect(defect.id)">
+                <td>{{defect.id}}</td>
+                <td>
+                    <p><b>{{defect.name}}</b></p>
+                    <p ng-bind-html="defect.description | html2text | hellip: 100"></p>
+                </td>
+                <td ng-class="defect.statusClass">{{defect.status}}</td>
+                <td><span class="{{getPriorityIcon(defect.priority)}}" aria-hidden="true"></span> {{defect.priority | cleanField}}</td>
+                <td><span class="{{getSeverityIcon(defect.severity)}}" aria-hidden="true"></span> {{defect.severity | cleanField}}</td>
+                <td class="defect-list-owner">
+                    <div class="media" ng-show="defect.owner">
+                      <div class="media-left media-middle">
+                          <img class="media-object" ng-src="{{Users.getUser(defect.owner).gravatar}}">
+                      </div>
+                      <div class="media-body">
+                          <h4 class="media-heading">{{Users.getName(defect.owner)}}</h4>
+                      </div>
+                    </div>
+                    <span class="defect-list-unassigned" ng-show="!defect.owner">Not assigned</span>
+                </td>
+                <td><span ng-show="defect.attachment" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span></td>
+                <td><span ng-show="defect['dev-comments']" class="glyphicon glyphicon-comment" aria-hidden="true"></span></td>
+                <td class="defect-list-lastmodified" title="{{defect['last-modified']}}"><span am-time-ago="defect['last-modified']"></span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
 <h1 ng-show="!defects || defects.length == 0">Sorry, there isn't any defect matching your query</h1>
-
-<nav ng-show="totalPages.length > 1">
-  <ul class="pagination">
-    <li ng-class="{'disabled':currentPage==1}">
-      <a href="" aria-label="Previous" ng-click="setPage(currentPage-1)" ng-class="{'disabled':currentPage==1}">
-        <span aria-hidden="true">&laquo;</span>
-      </a>
-    </li>
-    <li ng-repeat="i in totalPages track by $index" ng-class="{'active':$index+1 == currentPage}"><a href="" ng-click="setPage($index+1)">{{$index+1}}</a></li>
-    <li ng-class="{'disabled':currentPage==totalPages.length}">
-      <a href="" aria-label="Next" ng-click="setPage(currentPage+1)">
-        <span aria-hidden="true">&raquo;</span>
-      </a>
-    </li>
-  </ul>
-</nav>
