@@ -1,29 +1,12 @@
 {
-  "version": "0.1.8",
-  "name": "OpenQuality",
-  "description": "HP ALM Quality Center client",
-  "author": "Luca Faggianelli <luca.faggianelli@gmail.com>",
-  "homepage": "https://github.com/lucafaggianelli/OpenQuality",
-  "repository": "https://github.com/lucafaggianelli/OpenQuality",
-  "bugs": {
-      "url": "https://github.com/lucafaggianelli/OpenQuality/issues"
-  },
-  "license": "MIT",
-  "private": true,
-
-  "dependencies": {
-  },
-
+  "name": "example",
+  "version": "0.0.0",
   "devDependencies": {
+    "gulp": "^3.x",
+    "nw-builder": "^2.x",
+    "archiver": "0.15.x"
   },
-
-  "scripts": {
-  },
-
-  "main": "app/index.html",
-  "window": {
-    "toolbar": true,
-    "width": 800,
-    "height": 600
+  "dependencies": {
+    "gulp-util": "^2.2.14"
   }
 }
