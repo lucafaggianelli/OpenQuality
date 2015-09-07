@@ -20,7 +20,7 @@
   "scripts": {
   },
 
-  "main": "app/index.html",
+  "main": "index.html",
   "window": {
     "toolbar": true,
     "width": 800,

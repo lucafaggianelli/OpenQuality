@@ -1,6 +1,6 @@
 'use strict';
 
-var manifest = require('../package.json');
+var manifest = require('./package.json');
 var gui = require('nw.gui');
 
 // App version
